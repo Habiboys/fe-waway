@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Private app routes
+Disallow: /dashboard
+Disallow: /devices
+Disallow: /contacts
+Disallow: /contact-lists
+Disallow: /template-messages
+Disallow: /organizations
+Disallow: /orders
+Disallow: /admin
+
+Sitemap: https://your-domain.com/sitemap.xml
