@@ -1,9 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.API_BASE_URL?.replace('/api', '') ||
-  import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
-  'http://localhost:3000';
+function resolveSocketUrl() {
+  const explicitSocketUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.SOCKET_URL;
+  if (explicitSocketUrl) {
+    return explicitSocketUrl;
+  }
+
+  const apiBaseUrl =
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.API_BASE_URL ||
+    'http://localhost:3000/api';
+
+  try {
+    const url = new URL(apiBaseUrl);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return 'http://localhost:3000';
+  }
+}
+
+const SOCKET_URL = resolveSocketUrl();
 
 export function useSocket() {
   const socketRef = useRef(null);
