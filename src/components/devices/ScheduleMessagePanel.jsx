@@ -7,6 +7,20 @@ import { templateMessageService } from "../../services/templateMessageService";
 
 const INTERNATIONAL_PHONE_REGEX = /^[1-9]\d{7,14}$/;
 
+const extractTemplateVariables = (text = "") => {
+  const matches = String(text).match(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g) || [];
+  return [...new Set(matches.map((m) => m.replace(/[{}\s]/g, "")))];
+};
+
+const applyTemplateVariables = (text = "", values = {}) => {
+  return String(text).replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key) => {
+    const value = values[key];
+    return value === undefined || value === null || value === ""
+      ? `{{${key}}}`
+      : String(value);
+  });
+};
+
 function statusBadgeClass(status) {
   if (status === "completed") return "bg-emerald-100 text-emerald-700";
   if (status === "failed") return "bg-red-100 text-red-700";
@@ -25,6 +39,7 @@ export function ScheduleMessagePanel({
   devices,
   selectedDevice,
   onSelectDevice,
+  rtStatus,
   selectedOrgId,
 }) {
   const [phone, setPhone] = useState("");
@@ -35,6 +50,7 @@ export function ScheduleMessagePanel({
   const [selectedContactListId, setSelectedContactListId] = useState("");
   const [contacts, setContacts] = useState([]);
   const [selectedContactId, setSelectedContactId] = useState("");
+  const [variableValues, setVariableValues] = useState({});
 
   const [scheduleType, setScheduleType] = useState("once");
   const [scheduleAt, setScheduleAt] = useState("");
@@ -45,6 +61,7 @@ export function ScheduleMessagePanel({
   const [loadingSchedules, setLoadingSchedules] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actingId, setActingId] = useState(null);
+  const isReady = rtStatus?.status === "ready";
 
   const phoneError = useMemo(() => {
     const value = phone.trim();
@@ -57,6 +74,16 @@ export function ScheduleMessagePanel({
       return "Panjang nomor tidak valid (8-15 digit)";
     return "";
   }, [phone]);
+
+  const templateVariables = useMemo(
+    () => extractTemplateVariables(message),
+    [message],
+  );
+
+  const renderedMessage = useMemo(
+    () => applyTemplateVariables(message, variableValues),
+    [message, variableValues],
+  );
 
   const loadSchedules = async () => {
     if (!selectedDevice?.id) {
@@ -155,6 +182,7 @@ export function ScheduleMessagePanel({
 
   const handleCreateSchedule = async () => {
     if (!selectedDevice?.id) return toast.error("Pilih device dulu");
+    if (!isReady) return toast.error("Device belum terhubung ke WhatsApp");
     if (!phone.trim() || !message.trim())
       return toast.error("Isi nomor dan pesan");
     if (phoneError) return toast.error(phoneError);
@@ -168,7 +196,7 @@ export function ScheduleMessagePanel({
       setSaving(true);
       const payload = {
         phone: phone.trim(),
-        message: message.trim(),
+        message: renderedMessage.trim(),
         schedule_type: scheduleType,
         ...(scheduleAt ? { run_at: new Date(scheduleAt).toISOString() } : {}),
         ...(scheduleType === "custom"
@@ -252,6 +280,11 @@ export function ScheduleMessagePanel({
               </option>
             ))}
           </select>
+          {selectedDevice && !isReady && (
+            <p className="mt-1 text-xs text-amber-500">
+              ⚠️ Device belum terhubung. Connect dulu di tab Devices.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -278,6 +311,12 @@ export function ScheduleMessagePanel({
               );
               if (selected?.phone_number) {
                 setPhone(String(selected.phone_number));
+                setVariableValues((prev) => ({
+                  ...prev,
+                  name: prev.name || selected.name || "",
+                  nama: prev.nama || selected.name || "",
+                  phone: prev.phone || String(selected.phone_number),
+                }));
               }
             }}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs"
@@ -330,6 +369,34 @@ export function ScheduleMessagePanel({
           placeholder="Isi pesan"
           className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm"
         />
+
+        {templateVariables.length > 0 ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+            <p className="text-[11px] font-semibold text-amber-700">
+              Isi Variabel Template
+            </p>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {templateVariables.map((key) => (
+                <div key={key}>
+                  <label className="mb-1 block text-[11px] font-medium text-amber-700">
+                    {`{{${key}}}`}
+                  </label>
+                  <input
+                    value={variableValues[key] || ""}
+                    onChange={(e) =>
+                      setVariableValues((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                    placeholder={`Isi nilai untuk ${key}`}
+                    className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -389,80 +456,104 @@ export function ScheduleMessagePanel({
         </button>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-3 text-sm font-bold text-slate-900">
-          Daftar Jadwal Pesan
-        </h3>
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-bold text-slate-900">
+            Preview Pesan
+          </h3>
+          <div className="rounded-xl bg-slate-900 p-3">
+            <div className="min-h-32 rounded-lg bg-[#e5ddd5] p-3">
+              <div className="mb-2 text-[11px] text-slate-600">
+                Ke: {phone || "6281234567890"}
+              </div>
+              <div className="ml-auto max-w-[92%] rounded-xl bg-[#dcf8c6] px-3 py-2 shadow-sm">
+                <p className="whitespace-pre-line wrap-break-word text-sm text-slate-800">
+                  {renderedMessage || "Pesan Anda akan muncul di sini..."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {loadingSchedules ? (
-          <p className="text-xs text-slate-500">Memuat jadwal...</p>
-        ) : schedules.length === 0 ? (
-          <p className="text-xs text-slate-500">Belum ada jadwal tersimpan.</p>
-        ) : (
-          <div className="space-y-3">
-            {schedules.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-slate-200 p-3"
-              >
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-700">
-                    Job #{item.id}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-bold text-slate-900">
+            Daftar Jadwal Pesan
+          </h3>
+
+          {loadingSchedules ? (
+            <p className="text-xs text-slate-500">Memuat jadwal...</p>
+          ) : schedules.length === 0 ? (
+            <p className="text-xs text-slate-500">
+              Belum ada jadwal tersimpan.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {schedules.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-slate-200 p-3"
+                >
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-slate-700">
+                      Job #{item.id}
+                    </p>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadgeClass(item.status)}`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600">Ke: {item.phone}</p>
+                  <p className="text-xs text-slate-500">
+                    {scheduleLabel(item)}
                   </p>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadgeClass(item.status)}`}
-                  >
-                    {item.status}
-                  </span>
-                </div>
+                  <p className="text-xs text-slate-500">
+                    Run at:{" "}
+                    {item.run_at
+                      ? new Date(item.run_at).toLocaleString("id-ID")
+                      : "-"}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-xs text-slate-600">
+                    {item.message}
+                  </p>
 
-                <p className="text-xs text-slate-600">Ke: {item.phone}</p>
-                <p className="text-xs text-slate-500">{scheduleLabel(item)}</p>
-                <p className="text-xs text-slate-500">
-                  Run at:{" "}
-                  {item.run_at
-                    ? new Date(item.run_at).toLocaleString("id-ID")
-                    : "-"}
-                </p>
-                <p className="mt-1 line-clamp-2 text-xs text-slate-600">
-                  {item.message}
-                </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.status !== "cancelled" ? (
+                      <button
+                        onClick={() => handleStop(item.id)}
+                        disabled={
+                          actingId === item.id || item.status === "processing"
+                        }
+                        className="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2.5 py-1 text-[11px] font-semibold text-amber-700 disabled:opacity-50"
+                      >
+                        <PauseCircle size={12} /> Hentikan
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleResume(item.id)}
+                        disabled={actingId === item.id}
+                        className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 disabled:opacity-50"
+                      >
+                        <PlayCircle size={12} /> Lanjutkan
+                      </button>
+                    )}
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {item.status !== "cancelled" ? (
                     <button
-                      onClick={() => handleStop(item.id)}
+                      onClick={() => handleDelete(item.id)}
                       disabled={
                         actingId === item.id || item.status === "processing"
                       }
-                      className="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2.5 py-1 text-[11px] font-semibold text-amber-700 disabled:opacity-50"
+                      className="inline-flex items-center gap-1 rounded-lg border border-red-300 px-2.5 py-1 text-[11px] font-semibold text-red-700 disabled:opacity-50"
                     >
-                      <PauseCircle size={12} /> Hentikan
+                      <Trash2 size={12} /> Hapus
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => handleResume(item.id)}
-                      disabled={actingId === item.id}
-                      className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 disabled:opacity-50"
-                    >
-                      <PlayCircle size={12} /> Lanjutkan
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    disabled={
-                      actingId === item.id || item.status === "processing"
-                    }
-                    className="inline-flex items-center gap-1 rounded-lg border border-red-300 px-2.5 py-1 text-[11px] font-semibold text-red-700 disabled:opacity-50"
-                  >
-                    <Trash2 size={12} /> Hapus
-                  </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -7,6 +7,20 @@ import { templateMessageService } from "../../services/templateMessageService";
 
 const INTERNATIONAL_PHONE_REGEX = /^[1-9]\d{7,14}$/;
 
+const extractTemplateVariables = (text = "") => {
+  const matches = String(text).match(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g) || [];
+  return [...new Set(matches.map((m) => m.replace(/[{}\s]/g, "")))];
+};
+
+const applyTemplateVariables = (text = "", values = {}) => {
+  return String(text).replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key) => {
+    const value = values[key];
+    return value === undefined || value === null || value === ""
+      ? `{{${key}}}`
+      : String(value);
+  });
+};
+
 export function SendMessagePanel({
   devices,
   selectedDevice,
@@ -39,6 +53,7 @@ export function SendMessagePanel({
   const [selectedContactListId, setSelectedContactListId] = useState("");
   const [contacts, setContacts] = useState([]);
   const [selectedContactId, setSelectedContactId] = useState("");
+  const [variableValues, setVariableValues] = useState({});
   // Load templates when org changes
   useEffect(() => {
     async function loadTemplates() {
@@ -58,7 +73,10 @@ export function SendMessagePanel({
     const tpl = templates.find(
       (t) => String(t.id) === String(selectedTemplateId),
     );
-    if (tpl) setMessage(tpl.content);
+    if (tpl) {
+      setMessage(tpl.content);
+      setVariableValues({});
+    }
   }, [selectedTemplateId, templates]);
 
   useEffect(() => {
@@ -110,8 +128,24 @@ export function SendMessagePanel({
     );
     if (selected?.phone_number) {
       setPhone(String(selected.phone_number));
+      setVariableValues((prev) => ({
+        ...prev,
+        name: prev.name || selected.name || "",
+        nama: prev.nama || selected.name || "",
+        phone: prev.phone || String(selected.phone_number),
+      }));
     }
   }, [selectedContactId, contacts]);
+
+  const templateVariables = useMemo(
+    () => extractTemplateVariables(message),
+    [message],
+  );
+
+  const renderedMessage = useMemo(
+    () => applyTemplateVariables(message, variableValues),
+    [message, variableValues],
+  );
 
   const isReady = rtStatus?.status === "ready";
   const phoneError = useMemo(() => {
@@ -155,7 +189,7 @@ export function SendMessagePanel({
     try {
       const res = await deviceService.sendTest(selectedDevice.id, {
         phone: phone.trim(),
-        message: message.trim(),
+        message: renderedMessage.trim(),
       });
       setResult({ success: true, ...res });
       window.dispatchEvent(new Event("usage:refresh"));
@@ -290,6 +324,30 @@ export function SendMessagePanel({
             />
           </div>
 
+          {templateVariables.length > 0 ? (
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
+              <p className="mb-2 text-xs font-semibold text-indigo-700">
+                Isi Variabel Template
+              </p>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                {templateVariables.map((key) => (
+                  <input
+                    key={key}
+                    value={variableValues[key] || ""}
+                    onChange={(e) =>
+                      setVariableValues((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                    placeholder={`${key}`}
+                    className="w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <button
             onClick={handleSend}
             disabled={sending || !isReady}
@@ -328,7 +386,7 @@ export function SendMessagePanel({
                 </div>
                 <div className="ml-auto max-w-[90%] rounded-xl bg-[#dcf8c6] px-3 py-2 shadow-sm">
                   <p className="whitespace-pre-line wrap-break-word text-sm text-slate-800 leading-relaxed">
-                    {message || "Pesan Anda akan muncul di sini..."}
+                    {renderedMessage || "Pesan Anda akan muncul di sini..."}
                   </p>
                   <p className="mt-1 text-right text-[10px] text-slate-500">
                     Preview sekarang

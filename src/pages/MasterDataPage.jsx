@@ -93,14 +93,19 @@ export function MasterDataPage({ entity = "organizations" }) {
     setOrganizations(orgRows);
     setPlans(planRows);
 
-    if (!selectedOrgId && orgRows.length > 0) {
+    if (orgRows.length > 0) {
       const stored = getCurrentOrganizationId();
+      const preferredOrgId = selectedOrgId || stored;
       const nextOrgId =
-        stored && orgRows.some((o) => Number(o.id) === Number(stored))
-          ? Number(stored)
+        preferredOrgId &&
+        orgRows.some((o) => Number(o.id) === Number(preferredOrgId))
+          ? Number(preferredOrgId)
           : Number(orgRows[0].id);
       setSelectedOrgId(nextOrgId);
       setCurrentOrganizationId(nextOrgId);
+    } else {
+      setSelectedOrgId(null);
+      setCurrentOrganizationId(null);
     }
   }, [selectedOrgId]);
 

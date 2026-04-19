@@ -6,7 +6,10 @@ import { DevicePanel } from "../components/devices/DevicePanel";
 import { ScheduleMessagePanel } from "../components/devices/ScheduleMessagePanel";
 import { SendMessagePanel } from "../components/devices/SendMessagePanel";
 import { useSocket } from "../hooks/useSocket";
-import { setCurrentOrganizationId } from "../lib/organization";
+import {
+  getCurrentOrganizationId,
+  setCurrentOrganizationId,
+} from "../lib/organization";
 import { deviceService } from "../services/deviceService";
 import { masterDataService } from "../services/masterDataService";
 
@@ -25,7 +28,9 @@ export function DevicesPage() {
   const [loading, setLoading] = useState(false);
   // Organization filter (global)
   const [organizations, setOrganizations] = useState([]);
-  const [selectedOrgId, setSelectedOrgId] = useState(null);
+  const [selectedOrgId, setSelectedOrgId] = useState(
+    getCurrentOrganizationId(),
+  );
 
   const {
     isConnected: socketConnected,
@@ -41,13 +46,25 @@ export function DevicesPage() {
         const orgRows = await masterDataService.listOrganizations();
         setOrganizations(orgRows);
         if (orgRows.length > 0) {
+          const storedOrgId = getCurrentOrganizationId();
           setSelectedOrgId((prev) => {
-            if (prev && orgRows.some((o) => Number(o.id) === Number(prev)))
-              return prev;
-            return Number(orgRows[0].id);
+            const preferredId = prev || storedOrgId;
+            if (
+              preferredId &&
+              orgRows.some((o) => Number(o.id) === Number(preferredId))
+            ) {
+              const next = Number(preferredId);
+              setCurrentOrganizationId(next);
+              return next;
+            }
+
+            const next = Number(orgRows[0].id);
+            setCurrentOrganizationId(next);
+            return next;
           });
         } else {
           setSelectedOrgId(null);
+          setCurrentOrganizationId(null);
         }
       } catch (e) {
         toast.error(e.message || "Gagal memuat organization");
@@ -213,6 +230,7 @@ export function DevicesPage() {
           devices={devices}
           selectedDevice={selectedDevice}
           onSelectDevice={setSelectedDevice}
+          rtStatus={rtStatus}
           selectedOrgId={selectedOrgId}
         />
       )}

@@ -29,6 +29,8 @@ export function ContactsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilterContactListId, setSelectedFilterContactListId] =
+    useState("");
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -46,12 +48,19 @@ export function ContactsPage() {
         return;
       }
 
-      const currentExists = selectedOrgId
-        ? orgRows.some((org) => Number(org.id) === Number(selectedOrgId))
+      const storedOrgId = getCurrentOrganizationId();
+      const preferredOrgId = selectedOrgId || storedOrgId;
+
+      const currentExists = preferredOrgId
+        ? orgRows.some((org) => Number(org.id) === Number(preferredOrgId))
         : false;
 
       if (!currentExists) {
         const next = Number(orgRows[0].id);
+        setSelectedOrgId(next);
+        setCurrentOrganizationId(next);
+      } else {
+        const next = Number(preferredOrgId);
         setSelectedOrgId(next);
         setCurrentOrganizationId(next);
       }
@@ -60,18 +69,32 @@ export function ContactsPage() {
     }
   };
 
-  const loadData = async (orgIdOverride = selectedOrgId) => {
+  const loadData = async (
+    orgIdOverride = selectedOrgId,
+    contactListIdOverride = selectedFilterContactListId,
+  ) => {
     const targetOrgId = orgIdOverride ? Number(orgIdOverride) : null;
     if (!targetOrgId) {
       setRows([]);
       return;
     }
 
+    const targetListId = contactListIdOverride
+      ? Number(contactListIdOverride)
+      : null;
+
     const seq = ++loadSeqRef.current;
 
     try {
       setCurrentOrganizationId(targetOrgId);
-      const data = await masterDataService.listContacts();
+      let data = [];
+      if (targetListId) {
+        const listRows =
+          await masterDataService.listContactsByList(targetListId);
+        data = (listRows || []).map((item) => item.contact).filter(Boolean);
+      } else {
+        data = await masterDataService.listContacts();
+      }
       if (seq !== loadSeqRef.current) return;
       setRows(data);
     } catch (error) {
@@ -103,12 +126,12 @@ export function ContactsPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadData(selectedOrgId);
+      loadData(selectedOrgId, selectedFilterContactListId);
       loadContactLists(selectedOrgId);
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [selectedOrgId]);
+  }, [selectedOrgId, selectedFilterContactListId]);
 
   const openCreate = () => {
     if (!selectedOrgId) {
@@ -128,7 +151,14 @@ export function ContactsPage() {
   const openEdit = (row) => {
     setEditingId(row.id);
     setForm({ name: row.name || "", phone_number: row.phone_number || "" });
-    setCreateContactListId("");
+    const firstListId = row?.listItems?.[0]?.list?.id;
+    setCreateContactListId(
+      firstListId
+        ? String(firstListId)
+        : selectedFilterContactListId
+          ? String(selectedFilterContactListId)
+          : "",
+    );
     setIsModalOpen(true);
   };
 
@@ -147,7 +177,7 @@ export function ContactsPage() {
       toast.error("Nama dan No HP wajib diisi");
       return;
     }
-    if (!editingId && !createContactListId) {
+    if (!createContactListId) {
       toast.error("Pilih Contact List terlebih dahulu");
       return;
     }
@@ -155,7 +185,10 @@ export function ContactsPage() {
     setIsSubmitting(true);
     try {
       if (editingId) {
-        await masterDataService.updateContact(editingId, form);
+        await masterDataService.updateContact(editingId, {
+          ...form,
+          contact_list_ids: [Number(createContactListId)],
+        });
         toast.success("Contact berhasil diupdate");
       } else {
         await masterDataService.createContact({
@@ -202,6 +235,25 @@ export function ContactsPage() {
       .map((value) => String(value ?? "").toLowerCase())
       .some((value) => value.includes(q));
   });
+
+  const getContactListsLabel = (row) => {
+    const names = (row?.listItems || [])
+      .map((item) => item?.list?.name)
+      .filter(Boolean);
+
+    if (names.length > 0) {
+      return names.join(", ");
+    }
+
+    if (selectedFilterContactListId) {
+      const selected = contactLists.find(
+        (list) => String(list.id) === String(selectedFilterContactListId),
+      );
+      return selected?.name || "-";
+    }
+
+    return "-";
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -251,6 +303,7 @@ export function ContactsPage() {
                     ? Number(event.target.value)
                     : null;
                   setRows([]);
+                  setSelectedFilterContactListId("");
                   setSelectedOrgId(next);
                   setCurrentOrganizationId(next);
                 }}
@@ -284,6 +337,30 @@ export function ContactsPage() {
                 />
               </div>
 
+              <div className="w-full md:max-w-sm">
+                <label
+                  htmlFor="contact-filter-list"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Filter Contact List
+                </label>
+                <select
+                  id="contact-filter-list"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  value={selectedFilterContactListId}
+                  onChange={(event) =>
+                    setSelectedFilterContactListId(event.target.value)
+                  }
+                >
+                  <option value="">Semua Contact</option>
+                  {contactLists.map((list) => (
+                    <option key={String(list.id)} value={String(list.id)}>
+                      {list.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="w-full md:w-40">
                 <label
                   htmlFor="contact-per-page"
@@ -312,13 +389,14 @@ export function ContactsPage() {
                     <th className="px-3 py-2 font-semibold">ID</th>
                     <th className="px-3 py-2 font-semibold">Nama</th>
                     <th className="px-3 py-2 font-semibold">No HP</th>
+                    <th className="px-3 py-2 font-semibold">Contact List</th>
                     <th className="px-3 py-2 font-semibold">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedRows.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-3 text-slate-500" colSpan={4}>
+                      <td className="px-3 py-3 text-slate-500" colSpan={5}>
                         Tidak ada data
                       </td>
                     </tr>
@@ -328,6 +406,9 @@ export function ContactsPage() {
                         <td className="px-3 py-2">{row.id}</td>
                         <td className="px-3 py-2">{row.name}</td>
                         <td className="px-3 py-2">{row.phone_number}</td>
+                        <td className="px-3 py-2">
+                          {getContactListsLabel(row)}
+                        </td>
                         <td className="px-3 py-2">
                           <div className="flex gap-2">
                             <Button
@@ -442,41 +523,39 @@ export function ContactsPage() {
                 />
               </div>
 
-              {!editingId ? (
-                <div className="space-y-1 md:col-span-2">
-                  <label
-                    htmlFor="contact-list"
-                    className="text-sm font-medium text-slate-700"
-                  >
-                    Contact List
-                  </label>
-                  <select
-                    id="contact-list"
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                    value={createContactListId}
-                    onChange={(event) =>
-                      setCreateContactListId(event.target.value)
-                    }
-                    disabled={contactLists.length === 0}
-                  >
-                    <option value="">
-                      {contactLists.length === 0
-                        ? "Belum ada contact list"
-                        : "Pilih contact list"}
+              <div className="space-y-1 md:col-span-2">
+                <label
+                  htmlFor="contact-list"
+                  className="text-sm font-medium text-slate-700"
+                >
+                  Contact List
+                </label>
+                <select
+                  id="contact-list"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  value={createContactListId}
+                  onChange={(event) =>
+                    setCreateContactListId(event.target.value)
+                  }
+                  disabled={contactLists.length === 0}
+                >
+                  <option value="">
+                    {contactLists.length === 0
+                      ? "Belum ada contact list"
+                      : "Pilih contact list"}
+                  </option>
+                  {contactLists.map((list) => (
+                    <option key={String(list.id)} value={String(list.id)}>
+                      {list.name}
                     </option>
-                    {contactLists.map((list) => (
-                      <option key={String(list.id)} value={String(list.id)}>
-                        {list.name}
-                      </option>
-                    ))}
-                  </select>
-                  {contactLists.length === 0 ? (
-                    <p className="text-xs text-amber-600">
-                      Buat Contact List dulu di menu Contact Lists.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
+                  ))}
+                </select>
+                {contactLists.length === 0 ? (
+                  <p className="text-xs text-amber-600">
+                    Buat Contact List dulu di menu Contact Lists.
+                  </p>
+                ) : null}
+              </div>
 
               <div className="flex justify-end gap-2 md:col-span-2">
                 <Button type="button" variant="flat" onPress={closeModal}>

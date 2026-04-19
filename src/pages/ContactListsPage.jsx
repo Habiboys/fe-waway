@@ -44,12 +44,19 @@ export function ContactListsPage() {
         return;
       }
 
-      const currentExists = selectedOrgId
-        ? orgRows.some((org) => Number(org.id) === Number(selectedOrgId))
+      const storedOrgId = getCurrentOrganizationId();
+      const preferredOrgId = selectedOrgId || storedOrgId;
+
+      const currentExists = preferredOrgId
+        ? orgRows.some((org) => Number(org.id) === Number(preferredOrgId))
         : false;
 
       if (!currentExists) {
         const next = Number(orgRows[0].id);
+        setSelectedOrgId(next);
+        setCurrentOrganizationId(next);
+      } else {
+        const next = Number(preferredOrgId);
         setSelectedOrgId(next);
         setCurrentOrganizationId(next);
       }

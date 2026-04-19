@@ -1,24 +1,41 @@
 import { useEffect, useState } from "react";
 import { TemplateMessageManager } from "../components/devices/TemplateMessageManager";
-import { setCurrentOrganizationId } from "../lib/organization";
+import {
+  getCurrentOrganizationId,
+  setCurrentOrganizationId,
+} from "../lib/organization";
 import { masterDataService } from "../services/masterDataService";
 
 export default function TemplateMessagesPage() {
   const [organizations, setOrganizations] = useState([]);
-  const [selectedOrgId, setSelectedOrgId] = useState(null);
+  const [selectedOrgId, setSelectedOrgId] = useState(
+    getCurrentOrganizationId(),
+  );
 
   useEffect(() => {
     const loadOrgs = async () => {
       const orgRows = await masterDataService.listOrganizations();
       setOrganizations(orgRows);
       if (orgRows.length > 0) {
+        const storedOrgId = getCurrentOrganizationId();
         setSelectedOrgId((prev) => {
-          if (prev && orgRows.some((o) => Number(o.id) === Number(prev)))
-            return prev;
-          return Number(orgRows[0].id);
+          const preferredId = prev || storedOrgId;
+          if (
+            preferredId &&
+            orgRows.some((o) => Number(o.id) === Number(preferredId))
+          ) {
+            const next = Number(preferredId);
+            setCurrentOrganizationId(next);
+            return next;
+          }
+
+          const next = Number(orgRows[0].id);
+          setCurrentOrganizationId(next);
+          return next;
         });
       } else {
         setSelectedOrgId(null);
+        setCurrentOrganizationId(null);
       }
     };
     loadOrgs();
