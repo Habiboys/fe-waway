@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { ApiExamplePanel } from "../components/devices/ApiExamplePanel";
 import { BulkSendPanel } from "../components/devices/BulkSendPanel";
 import { DevicePanel } from "../components/devices/DevicePanel";
+import { ScheduleMessagePanel } from "../components/devices/ScheduleMessagePanel";
 import { SendMessagePanel } from "../components/devices/SendMessagePanel";
 import { useSocket } from "../hooks/useSocket";
 import { setCurrentOrganizationId } from "../lib/organization";
@@ -12,6 +13,7 @@ import { masterDataService } from "../services/masterDataService";
 const TABS = [
   { key: "devices", label: "Devices" },
   { key: "send", label: "Kirim Pesan" },
+  { key: "schedule", label: "Jadwal Pesan" },
   { key: "bulk", label: "Kirim Massal" },
   { key: "api", label: "Contoh API" },
 ];
@@ -204,6 +206,14 @@ export function DevicesPage() {
           organizations={organizations}
           selectedOrgId={selectedOrgId}
           setSelectedOrgId={setSelectedOrgId}
+        />
+      )}
+      {activeTab === "schedule" && (
+        <ScheduleMessagePanel
+          devices={devices}
+          selectedDevice={selectedDevice}
+          onSelectDevice={setSelectedDevice}
+          selectedOrgId={selectedOrgId}
         />
       )}
       {activeTab === "api" && <ApiExamplePanel />}

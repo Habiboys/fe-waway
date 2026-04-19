@@ -17,6 +17,11 @@ export const deviceService = {
 
   // Messaging
   sendTest: async (id, payload) => (await apiClient.post(`/devices/${id}/send-test`, payload)).data,
+  scheduleSend: async (id, payload) => (await apiClient.post(`/devices/${id}/schedule-send`, payload)).data,
+  listSchedules: async (id) => (await apiClient.get(`/devices/${id}/schedules`)).data,
+  stopSchedule: async (id, jobId) => (await apiClient.post(`/devices/${id}/schedules/${jobId}/stop`)).data,
+  resumeSchedule: async (id, jobId) => (await apiClient.post(`/devices/${id}/schedules/${jobId}/resume`)).data,
+  deleteSchedule: async (id, jobId) => (await apiClient.delete(`/devices/${id}/schedules/${jobId}`)).data,
   sendBulk: async (id, payload) => (await apiClient.post(`/devices/${id}/send-bulk`, payload)).data,
 
   sendBulkExcel: async (id, file, message) => {
