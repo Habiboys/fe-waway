@@ -98,9 +98,9 @@ export function EntityCrudPage({ entity = "organizations" }) {
       const preferredOrgId = selectedOrgId || stored;
       const nextOrgId =
         preferredOrgId &&
-        orgRows.some((o) => Number(o.id) === Number(preferredOrgId))
-          ? Number(preferredOrgId)
-          : Number(orgRows[0].id);
+        orgRows.some((o) => String(o.id) === String(preferredOrgId))
+          ? String(preferredOrgId)
+          : String(orgRows[0].id);
       setSelectedOrgId(nextOrgId);
       setCurrentOrganizationId(nextOrgId);
     } else {
@@ -359,7 +359,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                       value={selectedOrgId ? String(selectedOrgId) : ""}
                       onChange={(event) => {
                         const next = event.target.value
-                          ? Number(event.target.value)
+                          ? String(event.target.value)
                           : null;
                         setSelectedOrgId(next);
                         setCurrentOrganizationId(next);
@@ -420,10 +420,10 @@ export function EntityCrudPage({ entity = "organizations" }) {
                   </form>
                 }
                 rows={organizations}
-                columns={["ID", "Nama", "Aksi"]}
-                renderRow={(row) => (
+                columns={["No", "Nama", "Aksi"]}
+                renderRow={(row, index) => (
                   <tr key={row.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2">{row.id}</td>
+                    <td className="px-3 py-2">{index + 1}</td>
                     <td className="px-3 py-2">{row.name}</td>
                     <td className="px-3 py-2">
                       <div className="flex gap-2">
@@ -543,7 +543,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                 }
                 rows={plans}
                 columns={[
-                  "ID",
+                  "No",
                   "Nama",
                   "Harga",
                   "Msg",
@@ -551,9 +551,9 @@ export function EntityCrudPage({ entity = "organizations" }) {
                   "Durasi",
                   "Aksi",
                 ]}
-                renderRow={(row) => (
+                renderRow={(row, index) => (
                   <tr key={row.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2">{row.id}</td>
+                    <td className="px-3 py-2">{index + 1}</td>
                     <td className="px-3 py-2">{row.name}</td>
                     <td className="px-3 py-2">{row.price}</td>
                     <td className="px-3 py-2">{row.message_limit}</td>
@@ -658,10 +658,10 @@ export function EntityCrudPage({ entity = "organizations" }) {
                   </form>
                 }
                 rows={devices}
-                columns={["ID", "Nama", "No HP", "Status", "Aksi"]}
-                renderRow={(row) => (
+                columns={["No", "Nama", "No HP", "Status", "Aksi"]}
+                renderRow={(row, index) => (
                   <tr key={row.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2">{row.id}</td>
+                    <td className="px-3 py-2">{index + 1}</td>
                     <td className="px-3 py-2">{row.device_name}</td>
                     <td className="px-3 py-2">{row.phone_number || "-"}</td>
                     <td className="px-3 py-2">{row.status}</td>
@@ -749,10 +749,10 @@ export function EntityCrudPage({ entity = "organizations" }) {
                   </form>
                 }
                 rows={contacts}
-                columns={["ID", "Nama", "No HP", "Aksi"]}
-                renderRow={(row) => (
+                columns={["No", "Nama", "No HP", "Aksi"]}
+                renderRow={(row, index) => (
                   <tr key={row.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2">{row.id}</td>
+                    <td className="px-3 py-2">{index + 1}</td>
                     <td className="px-3 py-2">{row.name}</td>
                     <td className="px-3 py-2">{row.phone_number}</td>
                     <td className="px-3 py-2">
@@ -826,10 +826,10 @@ export function EntityCrudPage({ entity = "organizations" }) {
                   </form>
                 }
                 rows={contactLists}
-                columns={["ID", "Nama", "Aksi"]}
-                renderRow={(row) => (
+                columns={["No", "Nama", "Aksi"]}
+                renderRow={(row, index) => (
                   <tr key={row.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2">{row.id}</td>
+                    <td className="px-3 py-2">{index + 1}</td>
                     <td className="px-3 py-2">{row.name}</td>
                     <td className="px-3 py-2">
                       <div className="flex gap-2">
@@ -902,7 +902,7 @@ function MasterSection({ title, form, rows, columns, renderRow }) {
                   </td>
                 </tr>
               ) : (
-                rows.map(renderRow)
+                rows.map((row, index) => renderRow(row, index))
               )}
             </tbody>
           </table>

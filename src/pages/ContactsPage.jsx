@@ -52,15 +52,15 @@ export function ContactsPage() {
       const preferredOrgId = selectedOrgId || storedOrgId;
 
       const currentExists = preferredOrgId
-        ? orgRows.some((org) => Number(org.id) === Number(preferredOrgId))
+        ? orgRows.some((org) => String(org.id) === String(preferredOrgId))
         : false;
 
       if (!currentExists) {
-        const next = Number(orgRows[0].id);
+        const next = String(orgRows[0].id);
         setSelectedOrgId(next);
         setCurrentOrganizationId(next);
       } else {
-        const next = Number(preferredOrgId);
+        const next = String(preferredOrgId);
         setSelectedOrgId(next);
         setCurrentOrganizationId(next);
       }
@@ -73,14 +73,14 @@ export function ContactsPage() {
     orgIdOverride = selectedOrgId,
     contactListIdOverride = selectedFilterContactListId,
   ) => {
-    const targetOrgId = orgIdOverride ? Number(orgIdOverride) : null;
+    const targetOrgId = orgIdOverride ? String(orgIdOverride) : null;
     if (!targetOrgId) {
       setRows([]);
       return;
     }
 
     const targetListId = contactListIdOverride
-      ? Number(contactListIdOverride)
+      ? String(contactListIdOverride)
       : null;
 
     const seq = ++loadSeqRef.current;
@@ -104,7 +104,7 @@ export function ContactsPage() {
   };
 
   const loadContactLists = async (orgIdOverride = selectedOrgId) => {
-    const targetOrgId = orgIdOverride ? Number(orgIdOverride) : null;
+    const targetOrgId = orgIdOverride ? String(orgIdOverride) : null;
     if (!targetOrgId) {
       setContactLists([]);
       return;
@@ -187,13 +187,13 @@ export function ContactsPage() {
       if (editingId) {
         await masterDataService.updateContact(editingId, {
           ...form,
-          contact_list_ids: [Number(createContactListId)],
+          contact_list_ids: [String(createContactListId)],
         });
         toast.success("Contact berhasil diupdate");
       } else {
         await masterDataService.createContact({
           ...form,
-          contact_list_ids: [Number(createContactListId)],
+          contact_list_ids: [String(createContactListId)],
         });
         toast.success("Contact berhasil ditambahkan");
       }
@@ -300,7 +300,7 @@ export function ContactsPage() {
                 value={selectedOrgId ? String(selectedOrgId) : ""}
                 onChange={(event) => {
                   const next = event.target.value
-                    ? Number(event.target.value)
+                    ? String(event.target.value)
                     : null;
                   setRows([]);
                   setSelectedFilterContactListId("");
@@ -386,7 +386,7 @@ export function ContactsPage() {
               <table className="w-full min-w-160 text-left text-sm">
                 <thead className="bg-slate-50 text-slate-700">
                   <tr>
-                    <th className="px-3 py-2 font-semibold">ID</th>
+                    <th className="px-3 py-2 font-semibold">No</th>
                     <th className="px-3 py-2 font-semibold">Nama</th>
                     <th className="px-3 py-2 font-semibold">No HP</th>
                     <th className="px-3 py-2 font-semibold">Contact List</th>
@@ -401,9 +401,9 @@ export function ContactsPage() {
                       </td>
                     </tr>
                   ) : (
-                    paginatedRows.map((row) => (
+                    paginatedRows.map((row, index) => (
                       <tr key={row.id} className="border-t border-slate-100">
-                        <td className="px-3 py-2">{row.id}</td>
+                        <td className="px-3 py-2">{startIndex + index + 1}</td>
                         <td className="px-3 py-2">{row.name}</td>
                         <td className="px-3 py-2">{row.phone_number}</td>
                         <td className="px-3 py-2">

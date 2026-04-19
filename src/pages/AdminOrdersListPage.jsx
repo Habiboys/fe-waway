@@ -163,7 +163,7 @@ export function AdminOrdersListPage() {
             <table className="w-full min-w-200 text-left text-sm">
               <thead className="bg-slate-50 text-slate-700">
                 <tr>
-                  <th className="px-3 py-2 font-semibold">ID</th>
+                  <th className="px-3 py-2 font-semibold">No</th>
                   <th className="px-3 py-2 font-semibold">Organization</th>
                   <th className="px-3 py-2 font-semibold">Plan</th>
                   <th className="px-3 py-2 font-semibold">Amount</th>
@@ -186,9 +186,9 @@ export function AdminOrdersListPage() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedRows.map((order) => (
+                  paginatedRows.map((order, index) => (
                     <tr key={order.id} className="border-t border-slate-100">
-                      <td className="px-3 py-2">#{order.id}</td>
+                      <td className="px-3 py-2">{startIndex + index + 1}</td>
                       <td className="px-3 py-2">
                         {order.organization_name || "-"}
                       </td>

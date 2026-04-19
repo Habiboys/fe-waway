@@ -128,7 +128,7 @@ export function BulkSendPanel({
       return;
     }
     const loadContactsFromOrganization = async () => {
-      const orgId = Number(selectedOrgId);
+      const orgId = String(selectedOrgId || "").trim();
       if (!orgId) {
         setContacts([]);
         return;
@@ -353,7 +353,7 @@ export function BulkSendPanel({
                 value={selectedDevice?.id || ""}
                 onChange={(e) => {
                   const d = devices.find(
-                    (x) => x.id === Number(e.target.value),
+                    (x) => String(x.id) === String(e.target.value),
                   );
                   if (d) onSelectDevice(d);
                 }}

@@ -40,4 +40,14 @@ export const authService = {
     const { data } = await apiClient.post('/auth/logout')
     return data
   },
+
+  async updateProfile(payload) {
+    const { data } = await apiClient.put('/auth/profile', payload)
+    return data
+  },
+
+  async changePassword(payload) {
+    const { data } = await apiClient.post('/auth/change-password', payload)
+    return data
+  },
 }

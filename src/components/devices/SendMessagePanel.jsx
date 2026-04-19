@@ -224,7 +224,9 @@ export function SendMessagePanel({
             <select
               value={selectedDevice?.id || ""}
               onChange={(e) => {
-                const d = devices.find((x) => x.id === Number(e.target.value));
+                const d = devices.find(
+                  (x) => String(x.id) === String(e.target.value),
+                );
                 if (d) onSelectDevice(d);
               }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"

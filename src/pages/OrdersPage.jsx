@@ -70,7 +70,7 @@ export function OrdersPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {orders.map((order) => (
+          {orders.map((order, index) => (
             <Card
               key={order.id}
               className="border border-slate-200 bg-white shadow-sm"
@@ -78,7 +78,7 @@ export function OrdersPage() {
               <CardHeader className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h3 className="text-base font-semibold text-slate-900">
-                    Order #{order.id}
+                    Order #{index + 1}
                   </h3>
                   <p className="text-xs text-slate-500">
                     {new Date(order.created_at).toLocaleString("id-ID")}

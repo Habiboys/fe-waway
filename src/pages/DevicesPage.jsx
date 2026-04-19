@@ -51,14 +51,14 @@ export function DevicesPage() {
             const preferredId = prev || storedOrgId;
             if (
               preferredId &&
-              orgRows.some((o) => Number(o.id) === Number(preferredId))
+              orgRows.some((o) => String(o.id) === String(preferredId))
             ) {
-              const next = Number(preferredId);
+              const next = String(preferredId);
               setCurrentOrganizationId(next);
               return next;
             }
 
-            const next = Number(orgRows[0].id);
+            const next = String(orgRows[0].id);
             setCurrentOrganizationId(next);
             return next;
           });
@@ -75,6 +75,13 @@ export function DevicesPage() {
 
   // Fetch devices when org changes
   const fetchDevices = useCallback(async () => {
+    if (!selectedOrgId) {
+      setDevices([]);
+      setSelectedDevice(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       // Pass orgId to deviceService.list if supported, else filter manually
@@ -89,8 +96,12 @@ export function DevicesPage() {
   }, [selectedDevice, selectedOrgId]);
 
   useEffect(() => {
-    fetchDevices();
-  }, [selectedOrgId]);
+    const timer = setTimeout(() => {
+      fetchDevices();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [fetchDevices]);
 
   const deviceId = selectedDevice?.id;
   const rtStatus = deviceId ? getDeviceStatus(deviceId) : { status: "offline" };
@@ -118,7 +129,7 @@ export function DevicesPage() {
         <select
           value={selectedOrgId ? String(selectedOrgId) : ""}
           onChange={(e) => {
-            const next = e.target.value ? Number(e.target.value) : null;
+            const next = e.target.value ? String(e.target.value) : null;
             setSelectedOrgId(next);
             setCurrentOrganizationId(next);
           }}

@@ -2,7 +2,7 @@ const ORG_KEY = "wablast_org_id";
 
 export function getCurrentOrganizationId() {
   const value = localStorage.getItem(ORG_KEY);
-  return value ? Number(value) : null;
+  return value ? String(value) : null;
 }
 
 export function setCurrentOrganizationId(orgId) {

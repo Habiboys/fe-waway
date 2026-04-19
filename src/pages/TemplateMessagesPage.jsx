@@ -22,14 +22,14 @@ export default function TemplateMessagesPage() {
           const preferredId = prev || storedOrgId;
           if (
             preferredId &&
-            orgRows.some((o) => Number(o.id) === Number(preferredId))
+            orgRows.some((o) => String(o.id) === String(preferredId))
           ) {
-            const next = Number(preferredId);
+            const next = String(preferredId);
             setCurrentOrganizationId(next);
             return next;
           }
 
-          const next = Number(orgRows[0].id);
+          const next = String(orgRows[0].id);
           setCurrentOrganizationId(next);
           return next;
         });
@@ -52,7 +52,7 @@ export default function TemplateMessagesPage() {
           <select
             value={selectedOrgId ? String(selectedOrgId) : ""}
             onChange={(e) => {
-              const next = e.target.value ? Number(e.target.value) : null;
+              const next = e.target.value ? String(e.target.value) : null;
               setSelectedOrgId(next);
               setCurrentOrganizationId(next);
             }}

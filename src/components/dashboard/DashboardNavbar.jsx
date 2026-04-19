@@ -1,13 +1,38 @@
-import { Button, Chip } from "@heroui/react";
-import { AlignJustify, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  Button,
+  Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownTrigger,
+} from "@heroui/react";
+import {
+  AlignJustify,
+  ChevronsLeft,
+  ChevronsRight,
+  CircleUserRound,
+} from "lucide-react";
 
 export function DashboardNavbar({
   user,
   isDesktopSidebarOpen,
   onToggleMobileSidebar,
   onToggleDesktopSidebar,
+  onProfile,
   onLogout,
 }) {
+  const handleAccountAction = (key) => {
+    if (String(key) === "profile") {
+      onProfile?.();
+      return;
+    }
+
+    if (String(key) === "logout") {
+      onLogout?.();
+    }
+  };
+
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3 md:px-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -44,9 +69,22 @@ export function DashboardNavbar({
           <Chip color="primary" variant="flat" className="font-semibold">
             {user?.role || "member"}
           </Chip>
-          <Button color="danger" variant="flat" onPress={onLogout}>
-            Logout
-          </Button>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly variant="flat" aria-label="Account menu">
+                <CircleUserRound size={18} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownPopover>
+              <DropdownMenu onAction={handleAccountAction}>
+                <DropdownItem id="profile">Profile</DropdownItem>
+                <DropdownItem id="logout" className="text-danger">
+                  Logout
+                </DropdownItem>
+              </DropdownMenu>
+            </DropdownPopover>
+          </Dropdown>
         </div>
       </div>
     </header>

@@ -19,6 +19,7 @@ const DASHBOARD_ROUTES = new Set([
   "/contacts",
   "/contact-lists",
   "/template-messages",
+  "/profile",
 ]);
 
 export function DashboardLayout() {
@@ -71,6 +72,7 @@ export function DashboardLayout() {
             onToggleDesktopSidebar={() =>
               setIsDesktopSidebarOpen((prev) => !prev)
             }
+            onProfile={() => navigate("/profile")}
             onLogout={handleLogout}
           />
 

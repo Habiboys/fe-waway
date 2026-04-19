@@ -221,7 +221,7 @@ export function PlansPage() {
               <table className="w-full min-w-160 text-left text-sm">
                 <thead className="bg-slate-50 text-slate-700">
                   <tr>
-                    <th className="px-3 py-2 font-semibold">ID</th>
+                    <th className="px-3 py-2 font-semibold">No</th>
                     <th className="px-3 py-2 font-semibold">Nama</th>
                     <th className="px-3 py-2 font-semibold">Deskripsi</th>
                     <th className="px-3 py-2 font-semibold">Harga</th>
@@ -239,9 +239,9 @@ export function PlansPage() {
                       </td>
                     </tr>
                   ) : (
-                    paginatedRows.map((row) => (
+                    paginatedRows.map((row, index) => (
                       <tr key={row.id} className="border-t border-slate-100">
-                        <td className="px-3 py-2">{row.id}</td>
+                        <td className="px-3 py-2">{startIndex + index + 1}</td>
                         <td className="px-3 py-2">{row.name}</td>
                         <td className="px-3 py-2">{row.description || "-"}</td>
                         <td className="px-3 py-2">{row.price}</td>

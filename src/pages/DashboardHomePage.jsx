@@ -86,18 +86,34 @@ export function DashboardHomePage() {
           },
         ]
       : [
-          { label: "Campaign Aktif", value: "12", trend: "+8%" },
-          { label: "Device Online", value: "7", trend: "+2" },
+          {
+            label: "Total Pesan Tersedia",
+            value: Number(usageSummary?.limit || 0).toLocaleString("id-ID"),
+            trend: usageSummary?.plan?.name || "-",
+          },
+          {
+            label: "Sisa Pesan",
+            value: Number(usageSummary?.remaining || 0).toLocaleString("id-ID"),
+            trend: usageSummary?.usage_percent
+              ? `${usageSummary.usage_percent}% terpakai`
+              : "-",
+          },
           {
             label: "Pesan Hari Ini",
             value: Number(usageSummary?.used_today || 0).toLocaleString(
               "id-ID",
             ),
-            trend: usageSummary?.usage_percent
-              ? `${usageSummary.usage_percent}% terpakai`
-              : "-",
+            trend: "Aktivitas harian",
           },
-          { label: "Delivery Rate", value: "97.8%", trend: "Stabil" },
+          {
+            label: "Jatuh Tempo",
+            value: usageSummary?.subscription?.end_date
+              ? new Date(usageSummary.subscription.end_date).toLocaleDateString(
+                  "id-ID",
+                )
+              : "-",
+            trend: "Subscription",
+          },
         ];
 
   const quotaInfoText = useMemo(() => {
@@ -126,96 +142,45 @@ export function DashboardHomePage() {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card className="border border-slate-200 bg-white shadow-sm xl:col-span-2">
-          <CardHeader className="pb-3">
-            <h3 className="text-base font-bold text-slate-900">
-              Performa Pengiriman
-            </h3>
-          </CardHeader>
-          <Separator />
-          <CardContent className="space-y-4 p-5">
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-slate-600">Delivery Success</span>
-                <span className="font-semibold text-slate-900">97.8%</span>
-              </div>
-              <div className="h-2 rounded-full bg-slate-200">
-                <div className="h-2 w-[97.8%] rounded-full bg-emerald-500" />
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-slate-600">Queue Processed</span>
-                <span className="font-semibold text-slate-900">82%</span>
-              </div>
-              <div className="h-2 rounded-full bg-slate-200">
-                <div className="h-2 w-[82%] rounded-full bg-indigo-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-slate-200 bg-white shadow-sm">
-          <CardHeader className="pb-3">
-            <h3 className="text-base font-bold text-slate-900">
-              Profil Pengguna
-            </h3>
-          </CardHeader>
-          <Separator />
-          <CardContent className="space-y-3 p-5">
-            <div className="flex items-center gap-3">
-              <Avatar
-                name={user?.name || "U"}
-                className="bg-indigo-100 text-indigo-700"
-              />
+        {user?.role === "admin" ? (
+          <Card className="border border-slate-200 bg-white shadow-sm xl:col-span-2">
+            <CardHeader className="pb-3">
+              <h3 className="text-base font-bold text-slate-900">
+                Performa Pengiriman
+              </h3>
+            </CardHeader>
+            <Separator />
+            <CardContent className="space-y-4 p-5">
               <div>
-                <p className="font-semibold text-slate-900">{user?.name}</p>
-                <p className="text-sm text-slate-500">{user?.email}</p>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Delivery Success</span>
+                  <span className="font-semibold text-slate-900">97.8%</span>
+                </div>
+                <div className="h-2 rounded-full bg-slate-200">
+                  <div className="h-2 w-[97.8%] rounded-full bg-emerald-500" />
+                </div>
               </div>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
-              User ID:{" "}
-              <span className="font-semibold text-slate-900">{user?.id}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <Card className="mt-5 border border-slate-200 bg-white shadow-sm">
-        <CardHeader className="pb-3">
-          <h3 className="text-base font-bold text-slate-900">
-            {user?.role === "admin"
-              ? "Platform Snapshot"
-              : "Subscription & Kuota"}
-          </h3>
-        </CardHeader>
-        <Separator />
-        <CardContent className="space-y-2 p-5 text-sm text-slate-600">
-          {user?.role === "admin" ? (
-            <>
-              <p>
-                Revenue:{" "}
-                <span className="font-semibold text-slate-900">
-                  Rp{" "}
-                  {Number(adminSummary?.revenue || 0).toLocaleString("id-ID")}
-                </span>
-              </p>
-              <p>
-                Pending order menunggu approval:{" "}
-                <span className="font-semibold text-slate-900">
-                  {Number(adminSummary?.pending_orders || 0).toLocaleString(
-                    "id-ID",
-                  )}
-                </span>
-              </p>
-              <p className="text-xs text-slate-500">
-                Gunakan menu Orders dan Users di sidebar untuk pengelolaan
-                detail.
-              </p>
-            </>
-          ) : (
-            <>
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Queue Processed</span>
+                  <span className="font-semibold text-slate-900">82%</span>
+                </div>
+                <div className="h-2 rounded-full bg-slate-200">
+                  <div className="h-2 w-[82%] rounded-full bg-indigo-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border border-slate-200 bg-white shadow-sm xl:col-span-2">
+            <CardHeader className="pb-3">
+              <h3 className="text-base font-bold text-slate-900">
+                Ringkasan Subscription
+              </h3>
+            </CardHeader>
+            <Separator />
+            <CardContent className="space-y-2 p-5 text-sm text-slate-600">
               <p>
                 Paket aktif:{" "}
                 <span className="font-semibold text-slate-900">
@@ -238,10 +203,67 @@ export function DashboardHomePage() {
                   Kuota hampir habis. Segera upgrade paket Anda.
                 </p>
               ) : null}
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="border border-slate-200 bg-white shadow-sm">
+          <CardHeader className="pb-3">
+            <h3 className="text-base font-bold text-slate-900">
+              Profil Pengguna
+            </h3>
+          </CardHeader>
+          <Separator />
+          <CardContent className="space-y-3 p-5">
+            <div className="flex items-center gap-3">
+              <Avatar
+                name={user?.name || "U"}
+                className="bg-indigo-100 text-indigo-700"
+              />
+              <div>
+                <p className="font-semibold text-slate-900">{user?.name}</p>
+                <p className="text-sm text-slate-500">{user?.email}</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+              User ID:{" "}
+              <span className="font-semibold text-slate-900">
+                {user?.uuid || user?.id}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {user?.role === "admin" ? (
+        <Card className="mt-5 border border-slate-200 bg-white shadow-sm">
+          <CardHeader className="pb-3">
+            <h3 className="text-base font-bold text-slate-900">
+              Platform Snapshot
+            </h3>
+          </CardHeader>
+          <Separator />
+          <CardContent className="space-y-2 p-5 text-sm text-slate-600">
+            <p>
+              Revenue:{" "}
+              <span className="font-semibold text-slate-900">
+                Rp {Number(adminSummary?.revenue || 0).toLocaleString("id-ID")}
+              </span>
+            </p>
+            <p>
+              Pending order menunggu approval:{" "}
+              <span className="font-semibold text-slate-900">
+                {Number(adminSummary?.pending_orders || 0).toLocaleString(
+                  "id-ID",
+                )}
+              </span>
+            </p>
+            <p className="text-xs text-slate-500">
+              Gunakan menu Orders dan Users di sidebar untuk pengelolaan detail.
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
     </section>
   );
 }

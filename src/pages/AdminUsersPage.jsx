@@ -155,7 +155,7 @@ export function AdminUsersPage() {
 
     list.sort((a, b) => {
       if (sortBy === "id") {
-        return Number(a.id || 0) - Number(b.id || 0);
+        return String(a.id || "").localeCompare(String(b.id || ""));
       }
 
       const aValue = String(a?.[sortBy] ?? "").toLowerCase();
@@ -318,7 +318,7 @@ export function AdminUsersPage() {
                         className="inline-flex items-center gap-1 hover:text-slate-900"
                         onClick={() => handleSort("id")}
                       >
-                        ID{" "}
+                        No{" "}
                         <span className="text-xs">{sortIndicator("id")}</span>
                       </button>
                     </th>
@@ -389,12 +389,12 @@ export function AdminUsersPage() {
                       </td>
                     </tr>
                   ) : (
-                    paginatedRows.map((row) => (
+                    paginatedRows.map((row, index) => (
                       <tr
                         key={row.id}
                         className="border-t border-slate-100 transition-colors hover:bg-slate-50/70"
                       >
-                        <td className="px-3 py-2">{row.id}</td>
+                        <td className="px-3 py-2">{startIndex + index + 1}</td>
                         <td className="px-3 py-2 font-medium text-slate-800">
                           {row.name}
                         </td>

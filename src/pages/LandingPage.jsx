@@ -298,10 +298,42 @@ export function LandingPage() {
               Butuh demo cepat?
             </h3>
             <p className="text-slate-600">
-              Hubungi tim kamu sendiri atau arahkan user ke WhatsApp support di
-              sini.
+              Hubungi kontak berikut untuk tanya fitur, demo, atau kerja sama.
             </p>
-            <p className="text-sm text-indigo-600">support@wablast.local</p>
+
+            <div className="space-y-1 text-sm text-slate-700">
+              <p>
+                WhatsApp:{" "}
+                <a
+                  className="text-indigo-600 hover:underline"
+                  href="https://wa.me/6285142247464"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  6285142247464
+                </a>
+              </p>
+              <p>
+                Instagram:{" "}
+                <a
+                  className="text-indigo-600 hover:underline"
+                  href="https://instagram.com/nuval18_"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  @nuval18_
+                </a>
+              </p>
+              <p>
+                Email:{" "}
+                <a
+                  className="text-indigo-600 hover:underline"
+                  href="mailto:nouvalhabibie18@gmail.com"
+                >
+                  nouvalhabibie18@gmail.com
+                </a>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </section>

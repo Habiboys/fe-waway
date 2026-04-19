@@ -324,7 +324,7 @@ export function ApiExamplePanel() {
             <table className="w-full min-w-120 text-left text-xs">
               <thead className="bg-slate-50 text-slate-700">
                 <tr>
-                  <th className="px-3 py-2 font-semibold">ID</th>
+                  <th className="px-3 py-2 font-semibold">No</th>
                   <th className="px-3 py-2 font-semibold">Key Preview</th>
                   <th className="px-3 py-2 font-semibold">Status</th>
                   <th className="px-3 py-2 font-semibold">Created</th>
@@ -345,9 +345,9 @@ export function ApiExamplePanel() {
                     </td>
                   </tr>
                 ) : (
-                  keys.map((key) => (
+                  keys.map((key, index) => (
                     <tr key={key.id} className="border-t border-slate-100">
-                      <td className="px-3 py-2">{key.id}</td>
+                      <td className="px-3 py-2">{index + 1}</td>
                       <td className="px-3 py-2 font-mono">{key.key_preview}</td>
                       <td className="px-3 py-2">
                         {key.is_active ? "active" : "inactive"}

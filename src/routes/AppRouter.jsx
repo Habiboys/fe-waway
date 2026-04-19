@@ -17,6 +17,7 @@ import { OrdersPage } from "../pages/OrdersPage";
 import { OrganizationsPage } from "../pages/OrganizationsPage";
 import { PlansPage } from "../pages/PlansPage";
 import { PlansPricingPage } from "../pages/PlansPricingPage";
+import { ProfilePage } from "../pages/ProfilePage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { ResetPasswordPage } from "../pages/ResetPasswordPage";
 import TemplateMessagesPage from "../pages/TemplateMessagesPage";
@@ -106,6 +107,7 @@ export function AppRouter() {
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/contact-lists" element={<ContactListsPage />} />
         <Route path="/template-messages" element={<TemplateMessagesPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route
         path="*"
