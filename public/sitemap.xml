@@ -1,33 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://your-domain.com/</loc>
+        <loc>https://fe-waway.vercel.app/</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
+        <lastmod>2026-04-20</lastmod>
     </url>
     <url>
-        <loc>https://your-domain.com/login</loc>
+        <loc>https://fe-waway.vercel.app/login</loc>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
+        <lastmod>2026-04-20</lastmod>
     </url>
     <url>
-        <loc>https://your-domain.com/register</loc>
+        <loc>https://fe-waway.vercel.app/register</loc>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
-    </url>
-    <url>
-        <loc>https://your-domain.com/forgot-password</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://your-domain.com/reset-password</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://your-domain.com/verify-email</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.5</priority>
+        <lastmod>2026-04-20</lastmod>
     </url>
 </urlset>

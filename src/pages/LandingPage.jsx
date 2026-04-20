@@ -11,7 +11,7 @@ const features = [
   {
     icon: Rocket,
     title: "WA Broadcast Engine",
-    desc: "Kirim campaign WhatsApp terjadwal ke ribuan kontak dengan queue worker dan monitoring realtime.",
+    desc: "Free WhatsApp Blast untuk kirim campaign WA terjadwal ke ribuan kontak dengan queue worker dan monitoring realtime.",
   },
   {
     icon: ShieldCheck,
@@ -134,14 +134,16 @@ export function LandingPage() {
       >
         <div className="space-y-5">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
-            WhatsApp Growth + OTP Platform
+            Free WhatsApp Blast + OTP Platform
           </p>
           <h1 className="text-4xl font-bold leading-tight text-slate-900 md:text-5xl">
-            Satu platform untuk WA Blast, OTP WhatsApp, dan automasi bisnis.
+            Kirim pesan & notifikasi WA gratis, blast WhatsApp, dan OTP dalam
+            satu platform.
           </h1>
           <p className="text-slate-600">
-            Jalankan campaign marketing, notifikasi transaksi, dan verifikasi OTP
-            WhatsApp dalam satu dashboard yang siap dipakai sebagai produk SaaS.
+            Mulai dari free WhatsApp blast untuk promosi, reminder, dan
+            notifikasi transaksi. Saat bisnis tumbuh, lanjutkan dengan OTP
+            WhatsApp API untuk login, registrasi, dan verifikasi transaksi.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button color="primary" onPress={() => navigate("/register")}>
@@ -175,8 +177,8 @@ export function LandingPage() {
               </div>
             </div>
             <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs text-indigo-700">
-              Cocok untuk use case: Marketing Blast, Reminder Pembayaran,
-              OTP Login/Register, dan Verifikasi Transaksi.
+              Cocok untuk use case: Marketing Blast, Reminder Pembayaran, OTP
+              Login/Register, dan Verifikasi Transaksi.
             </div>
           </CardContent>
         </Card>
@@ -190,8 +192,13 @@ export function LandingPage() {
           Fitur Utama
         </h2>
         <p className="mt-2 text-slate-600">
-          Dirancang sesuai arsitektur sistem kamu: multi-tenant, WA device based,
-          OTP API, dan billing berbasis plan.
+          Dirancang sesuai arsitektur sistem kamu: multi-tenant, WA device
+          based, OTP API, dan billing berbasis plan.
+        </p>
+
+        <p className="mt-3 text-sm text-slate-500">
+          Cocok untuk kebutuhan free WhatsApp blast, kirim pesan/notifikasi WA
+          gratis, dan OTP WhatsApp API untuk autentikasi aplikasi.
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">

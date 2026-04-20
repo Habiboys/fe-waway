@@ -11,4 +11,4 @@ Disallow: /organizations
 Disallow: /orders
 Disallow: /admin
 
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://fe-waway.vercel.app/sitemap.xml
