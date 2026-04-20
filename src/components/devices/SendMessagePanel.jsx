@@ -187,7 +187,7 @@ export function SendMessagePanel({
     setSending(true);
     setResult(null);
     try {
-      const res = await deviceService.sendTest(selectedDevice.id, {
+      const res = await deviceService.send(selectedDevice.id, {
         phone: phone.trim(),
         message: renderedMessage.trim(),
       });

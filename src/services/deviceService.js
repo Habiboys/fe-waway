@@ -16,7 +16,8 @@ export const deviceService = {
   getAllStatuses: async () => (await apiClient.get('/devices/all-statuses')).data,
 
   // Messaging
-  sendTest: async (id, payload) => (await apiClient.post(`/devices/${id}/send-test`, payload)).data,
+  send: async (id, payload) => (await apiClient.post(`/devices/${id}/send`, payload)).data,
+  sendTest: async (id, payload) => (await apiClient.post(`/devices/${id}/send`, payload)).data,
   scheduleSend: async (id, payload) => (await apiClient.post(`/devices/${id}/schedule-send`, payload)).data,
   listSchedules: async (id) => (await apiClient.get(`/devices/${id}/schedules`)).data,
   stopSchedule: async (id, jobId) => (await apiClient.post(`/devices/${id}/schedules/${jobId}/stop`)).data,

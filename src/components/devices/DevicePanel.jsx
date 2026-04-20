@@ -8,6 +8,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useState } from "react";
+import { ConfirmModal } from "../common/ConfirmModal";
 
 const STATUS_MAP = {
   offline: { color: "bg-slate-400", text: "Offline", glow: "" },
@@ -60,7 +61,7 @@ function StatusTimeline({ currentStatus }) {
           <div key={step} className="flex items-center gap-1 flex-1">
             <div className={`flex flex-col items-center flex-1`}>
               <div
-                className={`h-2 w-full rounded-full transition-all duration-500 ${done ? "bg-gradient-to-r from-indigo-500 to-violet-500" : "bg-slate-200"} ${active ? "animate-pulse" : ""}`}
+                className={`h-2 w-full rounded-full transition-all duration-500 ${done ? "bg-linear-to-r from-indigo-500 to-violet-500" : "bg-slate-200"} ${active ? "animate-pulse" : ""}`}
               />
               <span
                 className={`text-[10px] mt-1 ${done ? "text-indigo-600 font-semibold" : "text-slate-400"}`}
@@ -92,6 +93,7 @@ export function DevicePanel({
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [connecting, setConnecting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const handleAdd = async () => {
     if (!newName.trim()) return;
@@ -166,7 +168,7 @@ export function DevicePanel({
             </div>
           )}
 
-          <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
+          <div className="divide-y divide-slate-50 max-h-125 overflow-y-auto">
             {devices.length === 0 && (
               <div className="px-5 py-10 text-center text-sm text-slate-400">
                 <Smartphone size={32} className="mx-auto mb-2 text-slate-300" />
@@ -184,7 +186,7 @@ export function DevicePanel({
                   onClick={() => onSelect(d)}
                   className={`w-full flex items-center gap-3 px-5 py-4 text-left transition hover:bg-slate-50 ${selectedDevice?.id === d.id ? "bg-indigo-50/60 border-l-[3px] border-indigo-500" : ""}`}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 text-indigo-600">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-indigo-100 to-violet-100 text-indigo-600">
                     <Smartphone size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -217,7 +219,7 @@ export function DevicePanel({
           <>
             {/* Device Info Card */}
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-5">
+              <div className="bg-linear-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-white">
@@ -262,10 +264,7 @@ export function DevicePanel({
                   </button>
                 )}
                 <button
-                  onClick={() => {
-                    if (confirm("Hapus device ini?"))
-                      onDelete(selectedDevice.id);
-                  }}
+                  onClick={() => setDeleteModalOpen(true)}
                   className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition"
                 >
                   <Trash2 size={14} /> Hapus
@@ -321,6 +320,18 @@ export function DevicePanel({
           </>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Hapus Device"
+        message={`Yakin hapus device "${selectedDevice?.device_name || ""}"?`}
+        confirmText="Hapus"
+        onCancel={() => setDeleteModalOpen(false)}
+        onConfirm={() => {
+          setDeleteModalOpen(false);
+          if (selectedDevice?.id) onDelete(selectedDevice.id);
+        }}
+      />
     </div>
   );
 }

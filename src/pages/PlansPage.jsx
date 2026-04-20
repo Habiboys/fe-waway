@@ -16,6 +16,7 @@ const emptyForm = {
   price: "0",
   message_limit: "0",
   device_limit: "1",
+  otp_limit: "0",
   duration_days: "30",
 };
 
@@ -63,6 +64,7 @@ export function PlansPage() {
       price: String(row.price ?? 0),
       message_limit: String(row.message_limit ?? 0),
       device_limit: String(row.device_limit ?? 1),
+      otp_limit: String(row.otp_limit ?? 0),
       duration_days: String(row.duration_days ?? 30),
     });
     setIsModalOpen(true);
@@ -86,6 +88,7 @@ export function PlansPage() {
       price: toNumber(form.price),
       message_limit: toNumber(form.message_limit),
       device_limit: toNumber(form.device_limit, 1),
+      otp_limit: toNumber(form.otp_limit),
       duration_days: toNumber(form.duration_days, 30),
     };
 
@@ -226,6 +229,7 @@ export function PlansPage() {
                     <th className="px-3 py-2 font-semibold">Deskripsi</th>
                     <th className="px-3 py-2 font-semibold">Harga</th>
                     <th className="px-3 py-2 font-semibold">Msg</th>
+                    <th className="px-3 py-2 font-semibold">OTP</th>
                     <th className="px-3 py-2 font-semibold">Device</th>
                     <th className="px-3 py-2 font-semibold">Durasi</th>
                     <th className="px-3 py-2 font-semibold">Aksi</th>
@@ -234,7 +238,7 @@ export function PlansPage() {
                 <tbody>
                   {paginatedRows.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-3 text-slate-500" colSpan={8}>
+                      <td className="px-3 py-3 text-slate-500" colSpan={9}>
                         Tidak ada data
                       </td>
                     </tr>
@@ -246,6 +250,11 @@ export function PlansPage() {
                         <td className="px-3 py-2">{row.description || "-"}</td>
                         <td className="px-3 py-2">{row.price}</td>
                         <td className="px-3 py-2">{row.message_limit}</td>
+                        <td className="px-3 py-2">
+                          {Number(row.otp_limit) === -1
+                            ? "Unlimited"
+                            : Number(row.otp_limit || 0).toLocaleString()}
+                        </td>
                         <td className="px-3 py-2">{row.device_limit}</td>
                         <td className="px-3 py-2">{row.duration_days}</td>
                         <td className="px-3 py-2">
@@ -441,6 +450,29 @@ export function PlansPage() {
                     }))
                   }
                 />
+              </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="plan-otp-limit"
+                  className="text-sm font-medium text-slate-700"
+                >
+                  Kuota OTP
+                </label>
+                <input
+                  id="plan-otp-limit"
+                  type="number"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  value={form.otp_limit}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      otp_limit: event.target.value,
+                    }))
+                  }
+                />
+                <p className="text-xs text-slate-400">
+                  0 = tidak termasuk OTP, -1 = unlimited
+                </p>
               </div>
 
               <div className="flex justify-end gap-2 md:col-span-2">

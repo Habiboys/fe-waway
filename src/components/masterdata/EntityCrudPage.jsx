@@ -15,6 +15,7 @@ import {
   setCurrentOrganizationId,
 } from "../../lib/organization";
 import { masterDataService } from "../../services/masterDataService";
+import { ConfirmModal } from "../common/ConfirmModal";
 import { DashboardFooter } from "../dashboard/DashboardFooter";
 import { DashboardNavbar } from "../dashboard/DashboardNavbar";
 import { DashboardSidebar } from "../dashboard/DashboardSidebar";
@@ -83,6 +84,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
   const [editingDeviceId, setEditingDeviceId] = useState(null);
   const [editingContactId, setEditingContactId] = useState(null);
   const [editingContactListId, setEditingContactListId] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const loadBaseData = useCallback(async () => {
     const [orgRows, planRows] = await Promise.all([
@@ -183,16 +185,21 @@ export function EntityCrudPage({ entity = "organizations" }) {
     setIsMobileSidebarOpen(false);
   };
 
-  const handleDelete = async (message, action) => {
-    if (!window.confirm(message)) return;
+  const handleDelete = async () => {
+    if (!pendingDelete?.action) return;
 
     try {
-      await action();
+      await pendingDelete.action();
       toast.success("Data berhasil dihapus");
+      setPendingDelete(null);
       await Promise.all([loadBaseData(), loadScopedData()]);
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  const openDeleteModal = (message, action) => {
+    setPendingDelete({ message, action });
   };
 
   const submitOrganization = async (event) => {
@@ -442,7 +449,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                           color="danger"
                           variant="flat"
                           onPress={() =>
-                            handleDelete("Hapus organization ini?", () =>
+                            openDeleteModal("Hapus organization ini?", () =>
                               masterDataService.deleteOrganization(row.id),
                             )
                           }
@@ -582,7 +589,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                           color="danger"
                           variant="flat"
                           onPress={() =>
-                            handleDelete("Hapus plan ini?", () =>
+                            openDeleteModal("Hapus plan ini?", () =>
                               masterDataService.deletePlan(row.id),
                             )
                           }
@@ -686,7 +693,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                           color="danger"
                           variant="flat"
                           onPress={() =>
-                            handleDelete("Hapus device ini?", () =>
+                            openDeleteModal("Hapus device ini?", () =>
                               masterDataService.deleteDevice(row.id),
                             )
                           }
@@ -775,7 +782,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                           color="danger"
                           variant="flat"
                           onPress={() =>
-                            handleDelete("Hapus contact ini?", () =>
+                            openDeleteModal("Hapus contact ini?", () =>
                               masterDataService.deleteContact(row.id),
                             )
                           }
@@ -848,7 +855,7 @@ export function EntityCrudPage({ entity = "organizations" }) {
                           color="danger"
                           variant="flat"
                           onPress={() =>
-                            handleDelete("Hapus contact list ini?", () =>
+                            openDeleteModal("Hapus contact list ini?", () =>
                               masterDataService.deleteContactList(row.id),
                             )
                           }
@@ -861,6 +868,19 @@ export function EntityCrudPage({ entity = "organizations" }) {
                 )}
               />
             ) : null}
+
+            <ConfirmModal
+              isOpen={Boolean(pendingDelete)}
+              title="Konfirmasi hapus"
+              message={
+                pendingDelete?.message ||
+                "Data ini akan dihapus permanen. Lanjutkan?"
+              }
+              confirmText="Hapus"
+              cancelText="Batal"
+              onCancel={() => setPendingDelete(null)}
+              onConfirm={handleDelete}
+            />
           </section>
 
           <DashboardFooter appName={APP_NAME} />

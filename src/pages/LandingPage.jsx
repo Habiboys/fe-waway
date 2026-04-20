@@ -10,20 +10,26 @@ const LOGO_SRC = "/images/logo-only.png";
 const features = [
   {
     icon: Rocket,
-    title: "Blast Cepat",
-    desc: "Kirim campaign WhatsApp terjadwal ke ribuan kontak dengan queue worker.",
+    title: "WA Broadcast Engine",
+    desc: "Kirim campaign WhatsApp terjadwal ke ribuan kontak dengan queue worker dan monitoring realtime.",
   },
   {
     icon: ShieldCheck,
-    title: "Multi Tenant",
-    desc: "Pisahkan data antar organisasi secara aman dengan role berbasis akses.",
+    title: "OTP WhatsApp API",
+    desc: "Sediakan verifikasi OTP WhatsApp untuk login, registrasi, dan transaksi dengan API key, policy, dan rate limit.",
   },
   {
     icon: Zap,
-    title: "Payment Ready",
-    desc: "Integrasi pembayaran subscription siap dipakai untuk SaaS plan kamu.",
+    title: "Quota & Billing Ready",
+    desc: "Kontrol kuota pesan + OTP per plan, lengkap dengan subscription dan payment flow untuk model SaaS.",
   },
 ];
+
+const formatOtpLimit = (value) => {
+  const limit = Number(value ?? 0);
+  if (limit < 0) return "Unlimited";
+  return limit.toLocaleString("id-ID");
+};
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -128,14 +134,14 @@ export function LandingPage() {
       >
         <div className="space-y-5">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
-            WhatsApp Blast SaaS
+            WhatsApp Growth + OTP Platform
           </p>
           <h1 className="text-4xl font-bold leading-tight text-slate-900 md:text-5xl">
-            Bangun mesin broadcast WhatsApp untuk bisnis kamu.
+            Satu platform untuk WA Blast, OTP WhatsApp, dan automasi bisnis.
           </h1>
           <p className="text-slate-600">
-            Kelola device, kontak, campaign, dan billing dalam satu dashboard
-            modern.
+            Jalankan campaign marketing, notifikasi transaksi, dan verifikasi OTP
+            WhatsApp dalam satu dashboard yang siap dipakai sebagai produk SaaS.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button color="primary" onPress={() => navigate("/register")}>
@@ -155,7 +161,7 @@ export function LandingPage() {
           <CardContent className="space-y-4 p-5 text-sm text-slate-700">
             <p className="font-semibold text-slate-900">Realtime Summary</p>
             <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-slate-500">Messages sent today</p>
+              <p className="text-slate-500">WA Messages sent today</p>
               <p className="text-3xl font-bold text-slate-900">12.845</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -164,9 +170,13 @@ export function LandingPage() {
                 <p className="font-semibold text-emerald-500">98.1%</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-3">
-                <p className="text-slate-500">Device Online</p>
-                <p className="font-semibold text-indigo-600">18</p>
+                <p className="text-slate-500">OTP Verified Today</p>
+                <p className="font-semibold text-indigo-600">3.206</p>
               </div>
+            </div>
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs text-indigo-700">
+              Cocok untuk use case: Marketing Blast, Reminder Pembayaran,
+              OTP Login/Register, dan Verifikasi Transaksi.
             </div>
           </CardContent>
         </Card>
@@ -180,7 +190,8 @@ export function LandingPage() {
           Fitur Utama
         </h2>
         <p className="mt-2 text-slate-600">
-          Semua yang kamu butuhkan untuk launch WA Blast sebagai SaaS.
+          Dirancang sesuai arsitektur sistem kamu: multi-tenant, WA device based,
+          OTP API, dan billing berbasis plan.
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -272,6 +283,9 @@ export function LandingPage() {
                       Kuota:{" "}
                       {Number(plan.message_limit || 0).toLocaleString("id-ID")}{" "}
                       pesan / {plan.duration_days} hari
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      OTP WhatsApp: {formatOtpLimit(plan.otp_limit)} / siklus
                     </p>
                     <Button
                       color="primary"

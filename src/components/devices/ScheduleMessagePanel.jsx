@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { deviceService } from "../../services/deviceService";
 import { masterDataService } from "../../services/masterDataService";
 import { templateMessageService } from "../../services/templateMessageService";
+import { ConfirmModal } from "../common/ConfirmModal";
 
 const INTERNATIONAL_PHONE_REGEX = /^[1-9]\d{7,14}$/;
 
@@ -61,6 +62,8 @@ export function ScheduleMessagePanel({
   const [loadingSchedules, setLoadingSchedules] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actingId, setActingId] = useState(null);
+  const [deleteScheduleId, setDeleteScheduleId] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const isReady = rtStatus?.status === "ready";
 
   const phoneError = useMemo(() => {
@@ -243,17 +246,25 @@ export function ScheduleMessagePanel({
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    if (!deleteScheduleId) return;
     try {
-      setActingId(id);
-      await deviceService.deleteSchedule(selectedDevice.id, id);
+      setActingId(deleteScheduleId);
+      await deviceService.deleteSchedule(selectedDevice.id, deleteScheduleId);
       toast.success("Jadwal dihapus");
+      setDeleteModalOpen(false);
+      setDeleteScheduleId(null);
       await loadSchedules();
     } catch (error) {
       toast.error(error.message || "Gagal menghapus jadwal");
     } finally {
       setActingId(null);
     }
+  };
+
+  const openDeleteModal = (id) => {
+    setDeleteScheduleId(id);
+    setDeleteModalOpen(true);
   };
 
   return (
@@ -542,7 +553,7 @@ export function ScheduleMessagePanel({
                     )}
 
                     <button
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => openDeleteModal(item.id)}
                       disabled={
                         actingId === item.id || item.status === "processing"
                       }
@@ -557,6 +568,19 @@ export function ScheduleMessagePanel({
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Hapus jadwal"
+        message="Jadwal pesan ini akan dihapus permanen. Lanjutkan?"
+        confirmText="Hapus"
+        cancelText="Batal"
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeleteScheduleId(null);
+        }}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

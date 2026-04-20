@@ -17,3 +17,15 @@ body {
   color: #0f172a;
   background: radial-gradient(circle at top, #eff6ff 0%, #e7e5ff 48%, #e2e8f0 100%);
 }
+
+/* Custom scrollbar for dashboard sidebar */
+.sidebar-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

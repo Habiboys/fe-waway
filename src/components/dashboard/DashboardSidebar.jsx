@@ -2,6 +2,7 @@ import { Button } from "@heroui/react";
 import {
   Building2,
   CreditCard,
+  KeyRound,
   LayoutDashboard,
   List,
   MessageSquare,
@@ -22,6 +23,7 @@ const menuItems = [
     highlight: true,
   },
   { key: "/template-messages", label: "Template Pesan", icon: List },
+  { key: "/otp-saas", label: "OTP SaaS", icon: KeyRound },
   { key: "/organizations", label: "Organizations", icon: Building2 },
   { key: "/contacts", label: "Contacts", icon: Users },
   { key: "/contact-lists", label: "Contact Lists", icon: List },
@@ -167,7 +169,7 @@ export function DashboardSidebar({
   return (
     <>
       <aside
-        className={`hidden shrink-0 min-h-dvh border-r border-slate-200 bg-white/95 px-5 py-6 shadow-sm backdrop-blur md:flex md:flex-col md:transition-all md:duration-200 ${
+        className={`sidebar-scrollbar hidden shrink-0 border-r border-slate-200 bg-white/95 px-5 py-6 shadow-sm backdrop-blur md:sticky md:top-0 md:flex md:h-dvh md:flex-col md:overflow-y-auto md:transition-all md:duration-200 ${
           isDesktopOpen
             ? "md:w-72 md:opacity-100"
             : "md:w-0 md:overflow-hidden md:px-0 md:py-0 md:opacity-0"

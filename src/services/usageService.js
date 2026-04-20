@@ -10,4 +10,9 @@ export const usageService = {
     const { data } = await apiClient.get('/usage/summary')
     return data
   },
+
+  async getOtpQuota() {
+    const { data } = await apiClient.get('/usage/otp-quota')
+    return data
+  },
 }

@@ -19,6 +19,7 @@ const DASHBOARD_ROUTES = new Set([
   "/contacts",
   "/contact-lists",
   "/template-messages",
+  "/otp-saas",
   "/profile",
 ]);
 

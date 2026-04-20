@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { templateMessageService } from "../../services/templateMessageService";
+import { ConfirmModal } from "../common/ConfirmModal";
 
 const QUICK_VARIABLES = [
   "{{nama}}",
@@ -29,6 +30,8 @@ export function TemplateMessageManager({ selectedOrgId }) {
   const [editing, setEditing] = useState(null); // {id, name, content}
   const [form, setForm] = useState({ name: "", content: "" });
   const [variableSamples, setVariableSamples] = useState({});
+  const [deleteTemplateId, setDeleteTemplateId] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const textareaRef = useRef(null);
 
   const loadTemplates = async () => {
@@ -108,15 +111,22 @@ export function TemplateMessageManager({ selectedOrgId }) {
     setForm({ name: tpl.name, content: tpl.content });
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Hapus template ini?")) return;
+  const handleDelete = async () => {
+    if (!deleteTemplateId) return;
     try {
-      await templateMessageService.remove(id);
+      await templateMessageService.remove(deleteTemplateId);
       toast.success("Template dihapus");
+      setDeleteModalOpen(false);
+      setDeleteTemplateId(null);
       loadTemplates();
     } catch (e) {
       toast.error(e.message || "Gagal hapus template");
     }
+  };
+
+  const openDeleteModal = (id) => {
+    setDeleteTemplateId(id);
+    setDeleteModalOpen(true);
   };
 
   return (
@@ -308,7 +318,7 @@ export function TemplateMessageManager({ selectedOrgId }) {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(tpl.id)}
+                          onClick={() => openDeleteModal(tpl.id)}
                           className="rounded-md border border-red-200 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
                         >
                           Hapus
@@ -322,6 +332,19 @@ export function TemplateMessageManager({ selectedOrgId }) {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Hapus template"
+        message="Template ini akan dihapus permanen. Lanjutkan?"
+        confirmText="Hapus"
+        cancelText="Batal"
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeleteTemplateId(null);
+        }}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

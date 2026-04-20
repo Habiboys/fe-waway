@@ -15,6 +15,7 @@ import { LandingPage } from "../pages/LandingPage";
 import { LoginPage } from "../pages/LoginPage";
 import { OrdersPage } from "../pages/OrdersPage";
 import { OrganizationsPage } from "../pages/OrganizationsPage";
+import { OtpSaasPage } from "../pages/OtpSaasPage";
 import { PlansPage } from "../pages/PlansPage";
 import { PlansPricingPage } from "../pages/PlansPricingPage";
 import { ProfilePage } from "../pages/ProfilePage";
@@ -107,6 +108,7 @@ export function AppRouter() {
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/contact-lists" element={<ContactListsPage />} />
         <Route path="/template-messages" element={<TemplateMessagesPage />} />
+        <Route path="/otp-saas" element={<OtpSaasPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route

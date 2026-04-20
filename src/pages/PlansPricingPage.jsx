@@ -106,6 +106,16 @@ export function PlansPricingPage() {
                       </strong>
                     </li>
                     <li>
+                      Kuota OTP:{" "}
+                      <strong>
+                        {Number(plan.otp_limit) === -1
+                          ? "Unlimited"
+                          : Number(plan.otp_limit || 0) === 0
+                            ? "Tidak termasuk"
+                            : Number(plan.otp_limit || 0).toLocaleString("id-ID")}
+                      </strong>
+                    </li>
+                    <li>
                       Batas device: <strong>{plan.device_limit}</strong>
                     </li>
                     <li>

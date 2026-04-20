@@ -15,7 +15,7 @@ const EXAMPLES = [
     title: "1. Kirim Pesan Tunggal",
     description: "Kirim satu pesan ke satu nomor WhatsApp",
     method: "POST",
-    url: "/api/devices/:deviceId/send-test",
+    url: "/api/devices/:deviceId/send",
     headers: {
       "x-api-key": "YOUR_API_KEY",
       "Content-Type": "application/json",
@@ -24,7 +24,7 @@ const EXAMPLES = [
       phone: "6281234567890",
       message: "Halo, ini pesan test dari WAWAY!",
     },
-    curl: `curl -X POST http://localhost:3000/api/devices/1/send-test \\
+    curl: `curl -X POST http://localhost:3000/api/devices/1/send \\
   -H "x-api-key: YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"phone":"6281234567890","message":"Halo, pesan test!"}'`,
@@ -35,7 +35,7 @@ const API_KEY = 'YOUR_API_KEY';
 
 async function sendMessage() {
   const { data } = await axios.post(
-    \`\${API_URL}/devices/1/send-test\`,
+    \`\${API_URL}/devices/1/send\`,
     {
       phone: '6281234567890',
       message: 'Halo, ini pesan test dari WAWAY!'
@@ -167,7 +167,7 @@ async function connectAndSend() {
 
   // 3. Send message
   const { data } = await axios.post(
-    \`\${API}/devices/1/send-test\`,
+    \`\${API}/devices/1/send\`,
     { phone: '6281234567890', message: 'Halo!' },
     { headers }
   );
