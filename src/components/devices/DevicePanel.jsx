@@ -1,4 +1,5 @@
 import {
+  Clipboard,
   Loader2,
   Plus,
   RefreshCw,
@@ -94,6 +95,7 @@ export function DevicePanel({
   const [newName, setNewName] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
 
   const handleAdd = async () => {
     if (!newName.trim()) return;
@@ -108,6 +110,17 @@ export function DevicePanel({
       await onConnect(id);
     } finally {
       setConnecting(false);
+    }
+  };
+
+  const handleCopyId = async (id, e) => {
+    if (e) e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(String(id));
+      setCopiedId(String(id));
+      setTimeout(() => setCopiedId(null), 1200);
+    } catch {
+      // Ignore clipboard errors silently
     }
   };
 
@@ -193,7 +206,18 @@ export function DevicePanel({
                     <p className="text-sm font-semibold text-slate-800 truncate">
                       {d.device_name}
                     </p>
-                    <p className="text-xs text-slate-300">ID: {d.id}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-slate-300">ID: {d.id}</p>
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopyId(d.id, e)}
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-500 hover:bg-slate-50"
+                        title="Copy ID"
+                      >
+                        <Clipboard size={12} />
+                        {copiedId === String(d.id) ? "Copied" : "Copy"}
+                      </button>
+                    </div>
                     <p className="text-xs text-slate-400">
                       {d.phone_number || "Belum terhubung"}
                     </p>
@@ -228,6 +252,20 @@ export function DevicePanel({
                     <p className="text-indigo-100 text-sm mt-0.5">
                       {selectedDevice.phone_number || "Belum terhubung"}
                     </p>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-indigo-100">
+                      <span>ID: {selectedDevice.id}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopyId(selectedDevice.id, e)}
+                        className="inline-flex items-center gap-1 rounded-md border border-white/30 bg-white/10 px-2 py-0.5 text-[10px] text-white hover:bg-white/20"
+                        title="Copy ID"
+                      >
+                        <Clipboard size={12} />
+                        {copiedId === String(selectedDevice.id)
+                          ? "Copied"
+                          : "Copy"}
+                      </button>
+                    </div>
                   </div>
                   <StatusBadge status={rtStatus.status} />
                 </div>
