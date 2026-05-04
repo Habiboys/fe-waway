@@ -53,7 +53,7 @@ sendMessage();`,
   },
   {
     title: "2. Kirim Pesan Massal (JSON)",
-    description: "Kirim pesan ke banyak nomor sekaligus dengan template",
+    description: "Kirim pesan ke banyak nomor sekaligus dengan template (server substitusi variabel dari field kontak; alias: name/nama, phone/nomor/no_hp)",
     method: "POST",
     url: "/api/devices/:deviceId/send-bulk",
     body: {

@@ -402,8 +402,10 @@ export function BulkSendPanel({
                 className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
               />
               <p className="mt-1 text-xs text-slate-400">
-                Variable: {"{{nama}}"} = nama kontak, {"{{phone}}"} = nomor
-                kontak
+                Variable: {"{{nama}}"} atau {"{{name}}"} = nama kontak; {"{{phone}}"}
+                atau {"{{nomor}}"}/{"{{no_hp}}"} = nomor. Untuk kirim
+                massal, server akan substitusi variabel dari field kontak (alias
+                didukung).
               </p>
               <p className="mt-1 text-[11px] text-slate-500">
                 Langkah 1: pilih template/isi pesan dulu, lalu upload atau
