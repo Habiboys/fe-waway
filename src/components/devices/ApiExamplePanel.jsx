@@ -54,7 +54,7 @@ sendMessage();`,
   {
     title: "2. Kirim Pesan Massal (JSON)",
     description:
-      "Kirim pesan ke banyak nomor sekaligus dengan template. Pengiriman diproses 1-per-1 (bukan paralel) dan backend memberi jeda random tiap pesan. Default backend: delay 5–15 detik per pesan, batchSize 30, batchPause 60–180 detik. Field delay/batchSize/batchPause opsional (boleh dihilangkan untuk pakai default); set batchPause:false untuk mematikan batch pause.",
+      "Kirim pesan ke banyak nomor sekaligus dengan template. Pengiriman diproses 1-per-1 (bukan paralel) dan backend memberi jeda random tiap pesan. Default backend: delay 5–15 detik per pesan, batchSize 30, batchPause 60–180 detik. Field delay/batchSize/batchPause opsional (boleh dihilangkan untuk pakai default); set batchPause:false untuk mematikan batch pause. Template alias didukung: {{name}} = {{nama}}, dan {{phone}} = {{nomor}} = {{no_hp}}.",
     method: "POST",
     url: "/api/devices/:deviceId/send-bulk",
     headers: {
@@ -66,6 +66,7 @@ sendMessage();`,
         { phone: "6281234567890", name: "Budi" },
         { phone: "6289876543210", name: "Ani" },
       ],
+      // Template variables: {{name}} / {{nama}} (alias), {{phone}} / {{nomor}} / {{no_hp}} (alias)
       message: "Halo {{nama}}, terima kasih telah bergabung!",
       // Optional tuning (defaults are applied by backend)
       // delay: per-message delay (supports number, "min-max", or {min,max}).
@@ -101,6 +102,7 @@ async function sendBulk() {
         { phone: '6289876543210', name: 'Ani' },
       ],
       message: 'Halo {{nama}}, terima kasih!',
+      // Template variables: {{name}} / {{nama}} (alias), {{phone}} / {{nomor}} / {{no_hp}} (alias)
       // Optional tuning (backend defaults if omitted):
       // - delay: 5-15 seconds per message
       // - batchSize: 30
