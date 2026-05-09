@@ -54,7 +54,7 @@ sendMessage();`,
   {
     title: "2. Kirim Pesan Massal (JSON)",
     description:
-      "Kirim pesan ke banyak nomor sekaligus dengan template. Pengiriman diproses 1-per-1 (bukan paralel) dan backend memberi jeda random tiap pesan. Default backend: delay 5–15 detik per pesan, batchSize 30, batchPause 60–180 detik. Field delay/batchSize/batchPause opsional (boleh dihilangkan untuk pakai default); set batchPause:false untuk mematikan batch pause. Template alias didukung: {{name}} = {{nama}}, dan {{phone}} = {{nomor}} = {{no_hp}}.",
+      "Kirim pesan ke banyak nomor sekaligus dengan template. Pengiriman diproses 1-per-1 (bukan paralel) dan backend memberi jeda random tiap pesan. Default backend: delay 5–15 detik per pesan, batchSize 30, batchPause 60–180 detik. Field delay/batchSize/batchPause opsional (boleh dihilangkan untuk pakai default); set batchPause:false untuk mematikan batch pause.",
     method: "POST",
     url: "/api/devices/:deviceId/send-bulk",
     headers: {
@@ -66,8 +66,8 @@ sendMessage();`,
         { phone: "6281234567890", name: "Budi" },
         { phone: "6289876543210", name: "Ani" },
       ],
-      // Template variables: {{name}} / {{nama}} (alias), {{phone}} / {{nomor}} / {{no_hp}} (alias)
-      message: "Halo {{nama}}, terima kasih telah bergabung!",
+      // Template variables: {{name}}, {{phone}}, dan field lain dari object contact
+      message: "Halo {{name}}, terima kasih telah bergabung!",
       // Optional tuning (defaults are applied by backend)
       // delay: per-message delay (supports number, "min-max", or {min,max}).
       // Example "5-15" means 5-15 seconds.
@@ -86,7 +86,7 @@ sendMessage();`,
       {"phone":"6281234567890","name":"Budi"},
       {"phone":"6289876543210","name":"Ani"}
     ],
-    "message": "Halo {{nama}}, terima kasih!",
+    "message": "Halo {{name}}, terima kasih!",
     "delay": "5-15",
     "batchSize": 30,
     "batchPause": "60-180"
@@ -101,8 +101,7 @@ async function sendBulk() {
         { phone: '6281234567890', name: 'Budi' },
         { phone: '6289876543210', name: 'Ani' },
       ],
-      message: 'Halo {{nama}}, terima kasih!',
-      // Template variables: {{name}} / {{nama}} (alias), {{phone}} / {{nomor}} / {{no_hp}} (alias)
+      message: 'Halo {{name}}, terima kasih!',
       // Optional tuning (backend defaults if omitted):
       // - delay: 5-15 seconds per message
       // - batchSize: 30
