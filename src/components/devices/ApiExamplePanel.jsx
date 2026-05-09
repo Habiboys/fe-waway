@@ -53,15 +53,29 @@ sendMessage();`,
   },
   {
     title: "2. Kirim Pesan Massal (JSON)",
-    description: "Kirim pesan ke banyak nomor sekaligus dengan template (server substitusi variabel dari field kontak; alias: name/nama, phone/nomor/no_hp)",
+    description:
+      "Kirim pesan ke banyak nomor sekaligus dengan template. Pengiriman diproses 1-per-1 (bukan paralel) dan backend memberi jeda random tiap pesan. Default backend: delay 5–15 detik per pesan, batchSize 30, batchPause 60–180 detik. Field delay/batchSize/batchPause opsional (boleh dihilangkan untuk pakai default); set batchPause:false untuk mematikan batch pause.",
     method: "POST",
     url: "/api/devices/:deviceId/send-bulk",
+    headers: {
+      "x-api-key": "YOUR_API_KEY",
+      "Content-Type": "application/json",
+    },
     body: {
       contacts: [
         { phone: "6281234567890", name: "Budi" },
         { phone: "6289876543210", name: "Ani" },
       ],
       message: "Halo {{nama}}, terima kasih telah bergabung!",
+      // Optional tuning (defaults are applied by backend)
+      // delay: per-message delay (supports number, "min-max", or {min,max}).
+      // Example "5-15" means 5-15 seconds.
+      delay: "5-15",
+      // batchSize: after every N messages, take a longer break.
+      batchSize: 30,
+      // batchPause: break duration (supports number, "min-max", or {min,max}).
+      // Set to false to disable batch pause.
+      batchPause: "60-180",
     },
     curl: `curl -X POST http://localhost:3000/api/devices/1/send-bulk \\
   -H "x-api-key: YOUR_API_KEY" \\
@@ -71,7 +85,10 @@ sendMessage();`,
       {"phone":"6281234567890","name":"Budi"},
       {"phone":"6289876543210","name":"Ani"}
     ],
-    "message": "Halo {{nama}}, terima kasih!"
+    "message": "Halo {{nama}}, terima kasih!",
+    "delay": "5-15",
+    "batchSize": 30,
+    "batchPause": "60-180"
   }'`,
     nodeJs: `const axios = require('axios');
 
@@ -84,6 +101,16 @@ async function sendBulk() {
         { phone: '6289876543210', name: 'Ani' },
       ],
       message: 'Halo {{nama}}, terima kasih!',
+      // Optional tuning (backend defaults if omitted):
+      // - delay: 5-15 seconds per message
+      // - batchSize: 30
+      // - batchPause: 60-180 seconds (set false to disable)
+      // Per-message delay (seconds range as string)
+      delay: '5-15',
+      // Optional: long pause every N messages
+      batchSize: 30,
+      // Optional: pause duration range (seconds). Set false to disable.
+      batchPause: '60-180',
     },
     {
       headers: {

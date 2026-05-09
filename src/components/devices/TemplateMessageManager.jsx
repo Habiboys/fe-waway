@@ -278,8 +278,10 @@ export function TemplateMessageManager({ selectedOrgId }) {
               <ul className="mt-3 space-y-1.5 text-[11px] text-slate-600">
                 <li>• Gunakan format variabel: {"{{nama_variabel}}"}</li>
                 <li>• Variabel otomatis terdeteksi dari isi pesan.</li>
-                <li>• Untuk pengiriman massal, server menggantikan variabel
-                  berdasarkan kolom kontak (name/nama, phone/nomor/no_hp).</li>
+                <li>
+                  • Untuk pengiriman massal, server menggantikan variabel
+                  berdasarkan kolom kontak (name/nama, phone/nomor/no_hp).
+                </li>
                 <li>• Klik template di tabel bawah untuk edit cepat.</li>
               </ul>
             </div>
