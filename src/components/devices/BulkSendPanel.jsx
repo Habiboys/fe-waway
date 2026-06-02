@@ -12,11 +12,16 @@ import {
 import {
   CheckCircle2,
   Download,
+  FileImage,
   FileSpreadsheet,
+  Image,
+  Link,
   Loader2,
   Send,
   Upload,
   Users,
+  Video,
+  File,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -83,6 +88,10 @@ export function BulkSendPanel({
   const [fileName, setFileName] = useState("");
   const [sending, setSending] = useState(false);
   const fileRef = useRef(null);
+  const mediaFileRef = useRef(null);
+  const [mediaFile, setMediaFile] = useState(null);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaCaption, setMediaCaption] = useState("");
   const isReady = rtStatus?.status === "ready";
 
   const templateVariables = useMemo(
@@ -114,6 +123,9 @@ export function BulkSendPanel({
     setLoadingOrgContacts(false);
     setFileName("");
     setManualText("");
+    setMediaFile(null);
+    setMediaUrl("");
+    setMediaCaption("");
     setVariableDefaults((prev) => ({ ...prev }));
   }, [contactSource]);
 
@@ -273,10 +285,25 @@ export function BulkSendPanel({
 
     setSending(true);
     try {
-      const res = await deviceService.sendBulk(selectedDevice.id, {
+      const payload = {
         contacts: mergedContacts,
         message: message.trim(),
-      });
+      };
+
+      // For bulk send: support media URL (public URL) and caption
+      // File upload for bulk requires separate upload endpoint - coming soon
+      if (mediaUrl.trim()) {
+        payload.mediaUrl = mediaUrl.trim();
+      }
+      if (mediaCaption.trim()) {
+        payload.caption = mediaCaption.trim();
+      }
+      // If media file uploaded, use sendMedia per-contact (single send)
+      if (mediaFile) {
+        toast.warning("File upload bulk belum didukung. Kirim via tab Send untuk testing.");
+      }
+
+      const res = await deviceService.sendBulk(selectedDevice.id, payload);
       window.dispatchEvent(new Event("usage:refresh"));
       toast.success(res.message);
     } catch (e) {
@@ -408,6 +435,56 @@ export function BulkSendPanel({
                 server akan substitusi variabel dari field kontak (alias
                 didukung).
               </p>
+
+              {/* Media upload section */}
+              <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
+                <p className="mb-2 text-[11px] font-semibold text-slate-600">
+                  Lampiran Media (opsional)
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => mediaFileRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
+                  >
+                    <Image size={14} /> Upload File
+                  </button>
+                  <input
+                    ref={mediaFileRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) setMediaFile(file);
+                    }}
+                  />
+                  <input
+                    value={mediaUrl}
+                    onChange={(e) => setMediaUrl(e.target.value)}
+                    placeholder="Atau URL media (https://...)"
+                    className="flex-1 min-w-[200px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                  />
+                </div>
+                {mediaFile && (
+                  <div className="mt-2 flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs text-slate-600 border border-slate-200">
+                    <File size={14} />
+                    <span className="flex-1 truncate">{mediaFile.name}</span>
+                    <button
+                      onClick={() => setMediaFile(null)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                )}
+                <input
+                  value={mediaCaption}
+                  onChange={(e) => setMediaCaption(e.target.value)}
+                  placeholder="Caption media (opsional)"
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                />
+              </div>
+
               <p className="mt-1 text-[11px] text-slate-500">
                 Langkah 1: pilih template/isi pesan dulu, lalu upload atau
                 download template Excel.

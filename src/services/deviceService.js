@@ -25,6 +25,16 @@ export const deviceService = {
   deleteSchedule: async (id, jobId) => (await apiClient.delete(`/devices/${id}/schedules/${jobId}`)).data,
   sendBulk: async (id, payload) => (await apiClient.post(`/devices/${id}/send-bulk`, payload)).data,
 
+  sendMedia: async (id, file, phone, caption) => {
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('phone', phone);
+    if (caption) formData.append('caption', caption);
+    return (await apiClient.post(`/devices/${id}/send-media`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })).data;
+  },
+
   sendBulkExcel: async (id, file, message) => {
     const formData = new FormData();
     formData.append('file', file);

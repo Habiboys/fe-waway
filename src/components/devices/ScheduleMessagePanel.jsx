@@ -1,5 +1,5 @@
-import { Loader2, PauseCircle, PlayCircle, Plus, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { File, Image, Link, Loader2, PauseCircle, PlayCircle, Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { deviceService } from "../../services/deviceService";
 import { masterDataService } from "../../services/masterDataService";
@@ -57,6 +57,17 @@ export function ScheduleMessagePanel({
   const [scheduleAt, setScheduleAt] = useState("");
   const [customIntervalValue, setCustomIntervalValue] = useState(1);
   const [customIntervalUnit, setCustomIntervalUnit] = useState("hour");
+  const [mediaScheduleUrl, setMediaScheduleUrl] = useState("");
+  const [mediaScheduleCaption, setMediaScheduleCaption] = useState("");
+  const mediaScheduleFileRef = useRef(null);
+  const [mediaScheduleFile, setMediaScheduleFile] = useState(null);
+
+  // Reset media when selected device changes
+  useEffect(() => {
+    setMediaScheduleUrl("");
+    setMediaScheduleCaption("");
+    setMediaScheduleFile(null);
+  }, [selectedDevice?.id]);
 
   const [schedules, setSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
@@ -209,6 +220,17 @@ export function ScheduleMessagePanel({
             }
           : {}),
       };
+
+      // If media file uploaded, send media first then schedule not supported — use URL instead
+      if (mediaScheduleFile) {
+        toast.warning("File upload untuk jadwal belum didukung. Gunakan URL media.");
+      }
+      if (mediaScheduleUrl.trim()) {
+        payload.mediaUrl = mediaScheduleUrl.trim();
+      }
+      if (mediaScheduleCaption.trim()) {
+        payload.caption = mediaScheduleCaption.trim();
+      }
 
       const res = await deviceService.scheduleSend(selectedDevice.id, payload);
       toast.success(`Jadwal tersimpan (Job #${res.job_id})`);
@@ -411,7 +433,55 @@ export function ScheduleMessagePanel({
           </div>
         ) : null}
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
+            <p className="mb-2 text-[11px] font-semibold text-slate-600">
+              Lampiran Media (opsional)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => mediaScheduleFileRef.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
+              >
+                <Image size={14} /> Pilih File
+              </button>
+              <input
+                ref={mediaScheduleFileRef}
+                type="file"
+                className="hidden"
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) setMediaScheduleFile(file);
+                }}
+              />
+              <input
+                value={mediaScheduleUrl}
+                onChange={(e) => setMediaScheduleUrl(e.target.value)}
+                placeholder="Atau URL media (https://...)"
+                className="flex-1 min-w-[180px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+              />
+            </div>
+            {mediaScheduleFile && (
+              <div className="mt-2 flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs text-slate-600 border border-slate-200">
+                <File size={14} />
+                <span className="flex-1 truncate">{mediaScheduleFile.name}</span>
+                <button
+                  onClick={() => setMediaScheduleFile(null)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+            <input
+              value={mediaScheduleCaption}
+              onChange={(e) => setMediaScheduleCaption(e.target.value)}
+              placeholder="Caption media (opsional)"
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+            />
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <select
               value={scheduleType}

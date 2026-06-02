@@ -1,5 +1,5 @@
-import { CheckCircle2, Loader2, Send, Smartphone, XCircle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, FileImage, Loader2, Send, Smartphone, Upload, XCircle } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { deviceService } from "../../services/deviceService";
 import { masterDataService } from "../../services/masterDataService";
@@ -21,16 +21,19 @@ const applyTemplateVariables = (text = "", values = {}) => {
   });
 };
 
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+};
+
 export function SendMessagePanel({
   devices,
   selectedDevice,
   onSelectDevice,
   rtStatus,
-  organizations,
   selectedOrgId,
-  setSelectedOrgId,
 }) {
-  // Reset selected device when org changes (optional: or reload device list if needed)
   useEffect(() => {
     if (
       devices.length > 0 &&
@@ -43,6 +46,8 @@ export function SendMessagePanel({
       onSelectDevice(null);
     }
   }, [devices, selectedOrgId]);
+
+  const fileInputRef = useRef(null);
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -54,6 +59,13 @@ export function SendMessagePanel({
   const [contacts, setContacts] = useState([]);
   const [selectedContactId, setSelectedContactId] = useState("");
   const [variableValues, setVariableValues] = useState({});
+
+  // Media state
+  const [mediaFile, setMediaFile] = useState(null);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [caption, setCaption] = useState("");
+  const [sendMethod, setSendMethod] = useState("text"); // text | url | file
+
   // Load templates when org changes
   useEffect(() => {
     async function loadTemplates() {
@@ -67,6 +79,7 @@ export function SendMessagePanel({
     loadTemplates();
     setSelectedTemplateId("");
   }, [selectedOrgId]);
+
   // When template is selected, fill message
   useEffect(() => {
     if (!selectedTemplateId) return;
@@ -171,8 +184,8 @@ export function SendMessagePanel({
       toast.error("Pilih device dulu");
       return;
     }
-    if (!phone.trim() || !message.trim()) {
-      toast.error("Isi nomor dan pesan");
+    if (!phone.trim()) {
+      toast.error("Isi nomor tujuan");
       return;
     }
     if (phoneError) {
@@ -183,14 +196,49 @@ export function SendMessagePanel({
       toast.error("Device belum terhubung ke WhatsApp");
       return;
     }
+    if (sendMethod === "text" && !message.trim()) {
+      toast.error("Isi pesan");
+      return;
+    }
+    if (sendMethod === "url" && !mediaUrl.trim()) {
+      toast.error("Isi URL media");
+      return;
+    }
+    if (sendMethod === "file" && !mediaFile) {
+      toast.error("Pilih file media");
+      return;
+    }
 
     setSending(true);
     setResult(null);
+
     try {
-      const res = await deviceService.send(selectedDevice.id, {
-        phone: phone.trim(),
-        message: renderedMessage.trim(),
-      });
+      let res;
+
+      if (sendMethod === "file") {
+        // Upload file via sendMedia
+        res = await deviceService.sendMedia(
+          selectedDevice.id,
+          mediaFile,
+          phone.trim(),
+          caption || undefined,
+        );
+      } else if (sendMethod === "url") {
+        // Send via mediaUrl
+        res = await deviceService.send(selectedDevice.id, {
+          phone: phone.trim(),
+          message: (caption || renderedMessage || "").trim(),
+          mediaUrl: mediaUrl.trim(),
+          caption: caption || undefined,
+        });
+      } else {
+        // Text only
+        res = await deviceService.send(selectedDevice.id, {
+          phone: phone.trim(),
+          message: renderedMessage.trim(),
+        });
+      }
+
       setResult({ success: true, ...res });
       window.dispatchEvent(new Event("usage:refresh"));
       toast.success("Pesan terkirim!");
@@ -202,6 +250,11 @@ export function SendMessagePanel({
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setMediaFile(file);
+  };
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
       {/* Form */}
@@ -211,7 +264,7 @@ export function SendMessagePanel({
             <Send size={16} /> Kirim Pesan Test
           </h3>
           <p className="text-emerald-100 text-xs mt-1">
-            Kirim pesan ke satu nomor WhatsApp untuk testing
+            Kirim pesan teks / media ke satu nomor WhatsApp
           </p>
         </div>
 
@@ -297,36 +350,76 @@ export function SendMessagePanel({
             ) : null}
           </div>
 
-          {/* Template selector and Message */}
+          {/* Send Method Selector */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-              Template Pesan
+              Jenis Kiriman
             </label>
-            <select
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm mb-2 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
-              value={selectedTemplateId}
-              onChange={(e) => setSelectedTemplateId(e.target.value)}
-            >
-              <option value="">-- Pilih Template --</option>
-              {templates.map((tpl) => (
-                <option key={tpl.id} value={tpl.id}>
-                  {tpl.name}
-                </option>
+            <div className="flex gap-2">
+              {[
+                { key: "text", label: "Teks" },
+                { key: "url", label: "Media URL" },
+                { key: "file", label: "Upload File" },
+              ].map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => {
+                    setSendMethod(m.key);
+                    if (m.key === "text") {
+                      setMediaFile(null);
+                      setMediaUrl("");
+                    }
+                  }}
+                  className={`rounded-xl px-4 py-2 text-xs font-medium transition-all ${
+                    sendMethod === m.key
+                      ? "bg-indigo-500 text-white shadow"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {m.label}
+                </button>
               ))}
-            </select>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-              Pesan
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tulis pesan Anda di sini..."
-              rows={5}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none resize-none"
-            />
+            </div>
           </div>
 
-          {templateVariables.length > 0 ? (
+          {/* Text message */}
+          {(sendMethod === "text" || sendMethod === "url") && (
+            <div>
+              {sendMethod === "text" && (
+                <>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    Template Pesan
+                  </label>
+                  <select
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm mb-2 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  >
+                    <option value="">-- Pilih Template --</option>
+                    {templates.map((tpl) => (
+                      <option key={tpl.id} value={tpl.id}>
+                        {tpl.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                {sendMethod === "url" ? "Caption / Pesan" : "Pesan"}
+              </label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Tulis pesan Anda di sini..."
+                rows={4}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none resize-none"
+              />
+            </div>
+          )}
+
+          {/* Template variables */}
+          {templateVariables.length > 0 && sendMethod === "text" && (
             <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
               <p className="mb-2 text-xs font-semibold text-indigo-700">
                 Isi Variabel Template
@@ -348,7 +441,93 @@ export function SendMessagePanel({
                 ))}
               </div>
             </div>
-          ) : null}
+          )}
+
+          {/* Media URL input */}
+          {sendMethod === "url" && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                URL Media (gambar/video/audio/dokumen)
+              </label>
+              <input
+                value={mediaUrl}
+                onChange={(e) => setMediaUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                URL publik ke file gambar, video, audio, atau dokumen
+              </p>
+            </div>
+          )}
+
+          {/* File upload */}
+          {sendMethod === "file" && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                File Media
+              </label>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+              />
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-400 transition-colors"
+              >
+                {mediaFile ? (
+                  <div className="space-y-1">
+                    <FileImage size={32} className="mx-auto text-indigo-500" />
+                    <p className="text-sm font-medium text-slate-700">
+                      {mediaFile.name}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {formatFileSize(mediaFile.size)}
+                    </p>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMediaFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                      className="text-xs text-red-500 hover:underline mt-1"
+                    >
+                      Hapus file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <Upload size={32} className="mx-auto text-slate-400" />
+                    <p className="text-sm text-slate-500">
+                      Klik untuk pilih file
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Gambar, video, audio, dokumen (max 50MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Caption (for media) */}
+          {(sendMethod === "url" || sendMethod === "file") && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Caption (opsional)
+              </label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Tulis caption untuk media..."
+                rows={2}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none resize-none"
+              />
+            </div>
+          )}
 
           <button
             onClick={handleSend}
@@ -390,6 +569,23 @@ export function SendMessagePanel({
                   <p className="whitespace-pre-line wrap-break-word text-sm text-slate-800 leading-relaxed">
                     {renderedMessage || "Pesan Anda akan muncul di sini..."}
                   </p>
+                  {(sendMethod === "url" || sendMethod === "file") && (
+                    <div className="mt-2 flex items-center gap-1 text-[10px] text-slate-500">
+                      <FileImage size={12} />
+                      <span>
+                        {sendMethod === "file" && mediaFile
+                          ? mediaFile.name
+                          : mediaUrl
+                            ? "Media URL"
+                            : "+ Media"}
+                      </span>
+                    </div>
+                  )}
+                  {caption && (
+                    <p className="mt-1 text-[11px] text-slate-500 italic">
+                      Caption: {caption}
+                    </p>
+                  )}
                   <p className="mt-1 text-right text-[10px] text-slate-500">
                     Preview sekarang
                   </p>
